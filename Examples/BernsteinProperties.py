@@ -13,6 +13,10 @@ from scipy.spatial import ConvexHull, convex_hull_plot_2d
 from polynomial.bernstein import Bernstein
 
 
+SAVE_FIG = True     # Set to True to save figures
+FIG_FORMAT = 'png'  # Used for the output format when saving figures
+
+
 def convexHull(curve):
     """
     Plots the convex hull of the Bernstein polynomial that is passed in
@@ -34,6 +38,9 @@ def convexHull(curve):
     hull = ConvexHull(cpts.T)
     for simplex in hull.simplices:
         ax.plot(cpts[0, simplex], cpts[1, simplex], 'k:')
+
+    if SAVE_FIG:
+        plt.savefig('Figures/ConvexHull.'+FIG_FORMAT, format=FIG_FORMAT)
 
 
 def endPoints(curve):
@@ -80,6 +87,9 @@ def derivatives(curve):
     ax = cdot.plot()
     ax.set_title('Derivative of Curve 1')
 
+    if SAVE_FIG:
+        plt.savefig('Figures/Derivative.'+FIG_FORMAT, format=FIG_FORMAT)
+
 
 def integrals(curve):
     """
@@ -105,10 +115,17 @@ def deCasteljau(curve, tdiv):
     ax1 = curve.plot()
     ax1.set_title('Curve Before Being Split')
 
+    if SAVE_FIG:
+        plt.savefig('Figures/Curve1.'+FIG_FORMAT, format=FIG_FORMAT)
+
     c1, c2 = curve.split(tdiv)
-    ax2 = c1.plot()
-    c2.plot(ax2)
+    ax2 = c1.plot(color='b', label='Curve 1')
+    c2.plot(ax2, color='r', label='Curve 2')
     ax2.set_title('Split Curve')
+    plt.legend()
+
+    if SAVE_FIG:
+        plt.savefig('Figures/Curve1Split.'+FIG_FORMAT, format=FIG_FORMAT)
 
 
 def degreeElevation(curve, elev):
@@ -131,6 +148,9 @@ def degreeElevation(curve, elev):
     curve.elev(elev).plot(ax)
     ax.set_title('Elevated Curve')
 
+    if SAVE_FIG:
+        plt.savefig('Figures/ElevatedCurve.'+FIG_FORMAT, format=FIG_FORMAT)
+
 
 def arithmetic(c1, c2):
     """
@@ -150,7 +170,10 @@ def arithmetic(c1, c2):
     """
     ax = c1.plot()
     c2.plot(ax)
-    ax.set_title('Curves 1 and 2')
+    ax.set_title('Curves C1 and C2')
+
+    if SAVE_FIG:
+        plt.savefig('Figures/Curve1AndCurve2.'+FIG_FORMAT, format=FIG_FORMAT)
 
     summation = c1 + c2
     product = c1*c2
@@ -158,13 +181,25 @@ def arithmetic(c1, c2):
     summation.plot()
     plt.title('Sum of C1 and C2')
 
+    if SAVE_FIG:
+        plt.savefig('Figures/SumOfC1AndC2.'+FIG_FORMAT, format=FIG_FORMAT)
+
     product.plot()
     plt.title('Product of C1 and C2')
+
+    if SAVE_FIG:
+        plt.savefig('Figures/ProductOfC1AndC2.'+FIG_FORMAT, format=FIG_FORMAT)
 
     # TODO add division once rational BP is finished
 
 
 if __name__ == '__main__':
+    # Creates a Figures directory if it doesn't already exist
+    if SAVE_FIG:
+        import os
+        if not os.path.isdir('Figures'):
+            os.mkdir('Figures')
+
     # Define control points as numpy arrays. Be sure to set the dtype to float.
     cpts1 = np.array([[0, 1, 2, 3, 4, 5], [5, 0, 2, 5, 7, 5]], dtype=float)
     cpts2 = np.array([[0, 2, 4, 6, 8, 10], [3, 7, 3, 5, 8, 9]], dtype=float)

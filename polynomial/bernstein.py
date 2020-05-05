@@ -147,9 +147,14 @@ class Bernstein(Base):
         return Bernstein(self.cpts, self.t0, self.tf)
 
     def plot(self, axisHandle=None, showCpts=True, **kwargs):
-        """Plots the Bezier curve in 1D or 2D
+        """Plots the Bernstein polynomial in 1D or 2D
 
         Note: Currently only supports plotting in 1D or 2D.
+
+        This is a convenience function to quickly plot Bernstein polynomials.
+        It is simply a wrapper around pyplot's plot function. For advanced
+        plots, the user should use the data from the Bernstein object's curve
+        attribute
 
         :param axisHandle: Handle to the figure axis. If it is None, a new
             figure will be plotted.
@@ -425,8 +430,8 @@ class Bernstein(Base):
         :return: Tuple of curves. One before the split point and one after.
         :rtype: tuple(Bernstein, Bernstein)
         """
-        c1 = self.copy()
-        c2 = self.copy()
+        # c1 = self.copy()
+        # c2 = self.copy()
 
         cpts1 = []
         cpts2 = []
@@ -438,15 +443,18 @@ class Bernstein(Base):
         for d in range(self.dim):
             left, right = deCasteljauSplit(self.cpts[d, :], tDiv - self.t0,
                                            self.tf - self.t0)
-            cpts1.append(left)
-            cpts2.append(right[::-1])
+            cpts1.append([left])
+            cpts2.append([right[::-1]])
 
-        c1.cpts = cpts1
-        c1.t0 = self.t0
-        c1.tf = tDiv
-        c2.cpts = cpts2
-        c2.t0 = tDiv
-        c2.tf = self.tf
+        # c1.cpts = cpts1
+        # c1.t0 = self.t0
+        # c1.tf = tDiv
+        # c2.cpts = cpts2
+        # c2.t0 = tDiv
+        # c2.tf = self.tf
+
+        c1 = Bernstein(cpts=np.concatenate(cpts1), t0=self.t0, tf=tDiv)
+        c2 = Bernstein(cpts=np.concatenate(cpts2), t0=tDiv, tf=self.tf)
 
         return c1, c2
 

@@ -37,6 +37,8 @@ class Base:
         self._tf = float(tf)
 
         if cpts is not None:
+            assert type(cpts) is np.ndarray, 'cpts must be a numpy array'
+            assert cpts.dtype == 'float64', 'cpts dtype must be numpy float64'
             if cpts.ndim == 1:
                 self._cpts = np.atleast_2d(cpts)
                 self._dim = 1
