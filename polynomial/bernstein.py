@@ -15,9 +15,11 @@ from scipy.special import binom
 from polynomial.base import Base
 from polynomial.rationalbernstein import RationalBernstein
 
-# TODO
-# Add mapping function from [t0, tf] --> [0, 1] (t to tau)
 
+# TODO
+# * Add mapping function from [t0, tf] --> [0, 1] (t to tau)
+# * Change cache values to reflect tf-t0 and use a hashtable lookup (in Base
+#   class)
 class Bernstein(Base):
     """Bernstein polynomial class for trajectory generation
 
@@ -383,7 +385,7 @@ class Bernstein(Base):
         try:
             Dm = Bernstein.diffMatCache[self.deg][self.tf-self.t0]
         except KeyError:
-            Dm = diffMatrix(self.deg, self.tf-self.t0)
+            Dm = diffMatrix(self.deg, self.t0, self.tf)
             Bernstein.diffMatCache[self.deg][self.tf-self.t0] = Dm
 
         cptsDot = []
@@ -441,9 +443,9 @@ class Bernstein(Base):
 
         c1.cpts = cpts1
         c1.t0 = self.t0
-        c1.tf = tDiv
+        c1.tf = tDiv + self.tf
         c2.cpts = cpts2
-        c2.t0 = tDiv
+        c2.t0 = tDiv + self.tf
         c2.tf = self.tf
 
         return c1, c2
@@ -968,7 +970,7 @@ def buildBezMatrix(n):
 
 
 @njit(cache=True)
-def diffMatrix(n, tf=1.0):
+def diffMatrix(n, t0=0.0, tf=1.0):
     """Generates the differentiation matrix to find the derivative
 
     Takes the derivative of the control points for a Bezier curve. The
@@ -984,7 +986,7 @@ def diffMatrix(n, tf=1.0):
     :return: Differentiation matrix for a Bezier curve of degree n
     :rtype: numpy.ndarray
     """
-    val = n/tf
+    val = n / (tf - t0)
     Dm = np.zeros((n+1, n))
     for i in range(n):
         Dm[i, i] = -val

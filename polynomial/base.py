@@ -8,6 +8,7 @@ Created on Tue Mar 24 10:37:59 2020
 
 from collections import defaultdict
 
+from numba import njit
 import numpy as np
 
 
@@ -31,6 +32,7 @@ class Base:
 
     def __init__(self, cpts=None, t0=0.0, tf=1.0):
         self._curve = None
+        self._tau = None
         self._t0 = float(t0)
         self._tf = float(tf)
 
@@ -97,3 +99,26 @@ class Base:
     @tf.setter
     def tf(self, value):
         self._tf = float(value)
+
+
+@njit(cache=True)
+def _t2tau(t, t0, tf):
+    """
+    Converts t \in [t0, tf] to tau \in [0, 1]
+
+    Parameters
+    ----------
+    t : float, np.array
+        Time to convert to tau. Can be a float or a numpy array.
+    t0 : float
+        Initial time.
+    tf : float
+        Final time.
+
+    Returns
+    -------
+    TYPE
+        DESCRIPTION.
+
+    """
+    return (t - t0) / (tf - t0)

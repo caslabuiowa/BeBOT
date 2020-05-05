@@ -181,7 +181,7 @@ class Parameters:
 
 
 if __name__ == '__main__':
-    NVEH = 100      # Number of vehicles
+    NVEH = 100      # Number of vehicles (up to 1000 for this example)
     NDIM = 3        # Number of dimensions
     DEG = 3         # Order of the Bernstein polynomial approximation
     VOLUME = 100    # Length of an edge of the cubic volume being used
