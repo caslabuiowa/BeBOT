@@ -284,7 +284,7 @@ class Bernstein(Base):
         c = np.empty((dim, m+n+1))
 
         try:
-            coefMat = Bernstein.productMatrixCache[m][n]
+            coefMat = Bernstein.prodMatCache[m][n]
         except KeyError:
             coefMat = bezProductCoefficients(m, n)
             Bernstein.prodMatCache[m][n] = coefMat
@@ -443,9 +443,9 @@ class Bernstein(Base):
 
         c1.cpts = cpts1
         c1.t0 = self.t0
-        c1.tf = tDiv + self.tf
+        c1.tf = tDiv
         c2.cpts = cpts2
-        c2.t0 = tDiv + self.tf
+        c2.t0 = tDiv
         c2.tf = self.tf
 
         return c1, c2

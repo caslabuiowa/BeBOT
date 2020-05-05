@@ -102,11 +102,13 @@ def integrals(curve):
 
 # TODO
 def deCasteljau(curve, tdiv):
-    ax = curve.plot()
-    c1, c2 = curve.split(tdiv)
+    ax1 = curve.plot()
+    ax1.set_title('Curve Before Being Split')
 
-    c1.plot(ax)
-    c2.plot(ax)
+    c1, c2 = curve.split(tdiv)
+    ax2 = c1.plot()
+    c2.plot(ax2)
+    ax2.set_title('Split Curve')
 
 
 def degreeElevation(curve, elev):
@@ -127,6 +129,7 @@ def degreeElevation(curve, elev):
     """
     ax = curve.plot()
     curve.elev(elev).plot(ax)
+    ax.set_title('Elevated Curve')
 
 
 def arithmetic(c1, c2):
@@ -147,6 +150,7 @@ def arithmetic(c1, c2):
     """
     ax = c1.plot()
     c2.plot(ax)
+    ax.set_title('Curves 1 and 2')
 
     summation = c1 + c2
     product = c1*c2
@@ -188,7 +192,7 @@ if __name__ == '__main__':
     integrals(c1)
 
     # Property 5 - The de Casteljau Algorithm
-    deCasteljau(c1, 0.5)
+    deCasteljau(c1, 15)
 
     # Property 6 - Degree Elevation
     degreeElevation(c1, 10)
