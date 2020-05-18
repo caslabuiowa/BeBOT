@@ -12,6 +12,24 @@ from constants import DEG_ELEV
 
 
 def speed(bp):
+    """
+    Finds the speed of the Bernstein polynomial using degree elevation.
+
+    Parameters
+    ----------
+    bp : Bernstein
+        Bernstein polynomial whose speed will be determined using the L2 norm
+        and degree elevation. The resulting BP will be elevated by DEG_ELEV
+        defined in constants. Note that according to the product property, the
+        norm squared will be of order 2N before being elevated.
+
+    Returns
+    -------
+    speed : numpy.array
+        1D numpy array of control points representing the BP of the L2 speed
+        of the BP passed in.
+
+    """
     speed = bp.diff().normSquare().elev(DEG_ELEV).cpts.flatten()
 
     return speed
