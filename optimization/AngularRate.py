@@ -26,9 +26,12 @@ def angularRate(bp):
     den = xdot*xdot + ydot*ydot
 
     cpts = num.elev(DEG_ELEV).cpts / den.elev(DEG_ELEV).cpts
-    wgts = den.cpts
 
-    return RationalBernstein(cpts, wgts, bp.t0, bp.tf)
+    return cpts.squeeze()
+
+    # wgts = den.cpts
+
+    # return RationalBernstein(cpts, wgts, bp.t0, bp.tf)
 
 
 if __name__ == '__main__':
