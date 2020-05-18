@@ -351,3 +351,6 @@ if __name__ == '__main__':
     for obs in params.obstacles:
         obsArtist = plt.Circle(obs, radius=params.dobs, edgecolor='Black')
         ax.add_artist(obsArtist)
+
+    ax.set_xlim([-5, 25])
+    ax.set_aspect('equal')
