@@ -13,7 +13,7 @@ from scipy.spatial import ConvexHull, convex_hull_plot_2d
 from polynomial.bernstein import Bernstein
 
 
-SAVE_FIG = True     # Set to True to save figures
+SAVE_FIG = False     # Set to True to save figures
 FIG_FORMAT = 'png'  # Used for the output format when saving figures
 
 
