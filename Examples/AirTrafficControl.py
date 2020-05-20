@@ -246,6 +246,10 @@ def cost(x, nveh):
 
 def drawUS(cities):
     """
+    Draws a map of the US with cities marked on the map.
+
+    An example of the cities that could be passed in is,
+
     cities = [
         [-117.1611, 32.7157],   # San Diego
         [-74.006, 40.7128],     # New York
@@ -331,6 +335,7 @@ class Parameters:
 if __name__ == '__main__':
     params = Parameters()
 
+    # Set everything up for the optimization
     x0 = initGuess(params)
     def fn(x): return cost(x, params.nveh)
     cons = [{'type': 'ineq',
@@ -339,6 +344,7 @@ if __name__ == '__main__':
     ub = np.array([300]*2*params.nveh*(params.deg-3) + params.nveh*[np.inf])
     bounds = Bounds(lb, ub)
 
+    # Call the optimizer
     results = minimize(fn, x0,
                        constraints=cons,
                        bounds=bounds,
@@ -347,6 +353,7 @@ if __name__ == '__main__':
                                 'disp': True,
                                 'iprint': 2})
 
+    # Plot everything
     y, times = reshape(results.x, params.deg, params.nveh, params.inipts,
                        params.finalpts, params.inispeeds, params.finalspeeds,
                        params.inipsis, params.finalpsis)
