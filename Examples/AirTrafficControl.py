@@ -284,14 +284,14 @@ def plotConstraints(trajs, params):
         for j, traj2 in enumerate(trajs[i+1:]):
             dv = traj - traj2
             dv.normSquare().plot(distAx, showCpts=False,
-                                 label=f'$||Veh_{i+1} - Veh_{i+2}||$')
+                                 label=f'$||Veh_{i+1} - Veh_{i+2}||^2$')
 
-    speedAx.plot(XLIM, [params.vmin**2]*2, '--', label='$v_{min}$')
-    speedAx.plot(XLIM, [params.vmax**2]*2, '--', label='$v_{max}$')
+    speedAx.plot(XLIM, [params.vmin**2]*2, '--', label='$v^2_{min}$')
+    speedAx.plot(XLIM, [params.vmax**2]*2, '--', label='$v^2_{max}$')
 
-    angRateAx.plot(XLIM, [params.wmax**2]*2, '--', label='$\omega_{max}$')
+    angRateAx.plot(XLIM, [params.wmax**2]*2, '--', label='$\omega^2_{max}$')
 
-    distAx.plot(XLIM, [params.dsafe**2]*2, '--', label='$d_{s}$')
+    distAx.plot(XLIM, [params.dsafe**2]*2, '--', label='$d^2_{s}$')
 
     speedAx.set_xlim(XLIM)
     speedAx.legend()
