@@ -25,7 +25,7 @@ def angularRate(bp):
     num = yddot*xdot - xddot*ydot
     den = xdot*xdot + ydot*ydot
 
-    cpts = num.elev(DEG_ELEV).cpts / den.elev(DEG_ELEV).cpts
+    cpts = num.elev(DEG_ELEV).cpts**2 / den.elev(DEG_ELEV).cpts**2
 
     return cpts.squeeze()
 

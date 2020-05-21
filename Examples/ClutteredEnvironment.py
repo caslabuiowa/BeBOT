@@ -291,7 +291,7 @@ class Parameters:
         self.dsafe = 1  # Minimum safe distance between vehicles
         self.dobs = 2   # Minimum safe distance between vehicles and obstacles
         self.vmax = 10  # Maximum speed
-        self.wmax = np.pi/2 # Maximum angular rate
+        self.wmax = 3*np.pi/2 # Maximum angular rate
 
         # Initial points
         self.inipts = np.array([[0, 0],

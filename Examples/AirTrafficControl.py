@@ -244,14 +244,70 @@ def cost(x, nveh):
     return sum(times)
 
 
-def plotConstraints(trajs):
-    for traj in trajs:
+def plotConstraints(trajs, params):
+    """
+    Plots the constraints of the problem to verify whether they are being met.
+
+    Parameters
+    ----------
+    trajs : list
+        List of Bernstein trajectories.
+    params : Parameters
+        Parameters of the problem.
+
+    Returns
+    -------
+    None.
+
+    """
+    XLIM = [-1, 9]
+    speedFig, speedAx = plt.subplots()
+    angRateFig, angRateAx = plt.subplots()
+    distFig, distAx = plt.subplots()
+
+    for i, traj in enumerate(trajs):
         xdot = traj.diff().x
         ydot = traj.diff().y
         xddot = xdot.diff()
         yddot = ydot.diff()
 
         speed = xdot*xdot + ydot*ydot
+        speed.plot(speedAx, showCpts=False, label=f'Vehicle {i+1}')
+
+        num = yddot*xdot - xddot*ydot
+        den = xdot*xdot + ydot*ydot
+        angRate = (num.curve / den.curve).squeeze()**2
+        time = np.linspace(num.t0, num.tf, len(angRate))
+        angRateAx.plot(time, angRate, label=f'Vehicle {i+1}')
+
+    for i, traj in enumerate(trajs[:-1]):
+        for j, traj2 in enumerate(trajs[i+1:]):
+            dv = traj - traj2
+            dv.normSquare().plot(distAx, showCpts=False,
+                                 label=f'$||Veh_{i+1} - Veh_{i+2}||$')
+
+    speedAx.plot(XLIM, [params.vmin**2]*2, '--', label='$v_{min}$')
+    speedAx.plot(XLIM, [params.vmax**2]*2, '--', label='$v_{max}$')
+
+    angRateAx.plot(XLIM, [params.wmax**2]*2, '--', label='$\omega_{max}$')
+
+    distAx.plot(XLIM, [params.dsafe**2]*2, '--', label='$d_{s}$')
+
+    speedAx.set_xlim(XLIM)
+    speedAx.legend()
+    speedAx.set_xlabel('Time')
+    speedAx.set_ylabel('Squared Speed')
+    speedAx.set_title('Speed Constraints')
+    angRateAx.set_xlim(XLIM)
+    angRateAx.legend()
+    angRateAx.set_xlabel('Time')
+    angRateAx.set_ylabel('Squared Angular Velocity')
+    angRateAx.set_title('Angular Velocity Constraints')
+    distAx.set_xlim(XLIM)
+    distAx.legend()
+    distAx.set_xlabel('Time')
+    distAx.set_ylabel('Squared Euclidean Distance')
+    distAx.set_title('Distance Constraints')
 
 
 def drawUS(cities):
@@ -380,5 +436,10 @@ if __name__ == '__main__':
         [-104.9903, 39.7392]    # Denver
         ]
     ax = drawUS(cities)
-    for traj in trajs:
-        ax.plot(traj.curve[0], traj.curve[1], transform=crs.PlateCarree())
+    for i, traj in enumerate(trajs):
+        ax.plot(traj.curve[0], traj.curve[1], transform=crs.PlateCarree(),
+                label=f'Vehicle {i+1}')
+    ax.legend()
+
+    plotConstraints(trajs, params)
+    plt.show()
