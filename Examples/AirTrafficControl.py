@@ -244,6 +244,16 @@ def cost(x, nveh):
     return sum(times)
 
 
+def plotConstraints(trajs):
+    for traj in trajs:
+        xdot = traj.diff().x
+        ydot = traj.diff().y
+        xddot = xdot.diff()
+        yddot = ydot.diff()
+
+        speed = xdot*xdot + ydot*ydot
+
+
 def drawUS(cities):
     """
     Draws a map of the US with cities marked on the map.

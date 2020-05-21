@@ -344,9 +344,11 @@ if __name__ == '__main__':
     trajs = buildTrajList(y, params.nveh, params.tf)
 
     plt.close('all')
-    ax = trajs[0].plot(showCpts=False)
-    for traj in trajs[1:]:
+    fig, ax = plt.subplots()
+    for traj in trajs:
         traj.plot(ax, showCpts=False)
+        pt10 = traj(10)
+        plt.plot(pt10[0], pt10[1], 'x', markeredgewidth=7, zorder=10)
 
     for obs in params.obstacles:
         obsArtist = plt.Circle(obs, radius=params.dobs, edgecolor='Black')
