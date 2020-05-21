@@ -19,7 +19,7 @@ import scipy.optimize as sop
 import bezier as bez
 
 
-DEG_ELEV = 30
+DEG_ELEV = 10
 
 
 class Parameters:
@@ -28,7 +28,7 @@ class Parameters:
     def __init__(self):
         self.deg = 3        # Order of approximation
         self.ndim = 3       # Number of dimensions
-        self.dsafe = 1      # Minimum safe distance between vehicles (m)
+        self.dsafe = 0.9      # Minimum safe distance between vehicles (m)
         self.odsafe = 2     # Minimum safe distance from obstacles (m)
 
         self.obsLoc = np.array([(13, 10),
@@ -119,7 +119,46 @@ def cost(x, params):
     """
     # return 0
     y = reshape(x, params.nveh, params.deg, params.iniPts, params.finalPts)
-    return np.linalg.norm(np.diff(y))
+    return _euclideanObjective(y, params.nveh, params.ndim)
+    # return np.linalg.norm(np.diff(y))
+
+@njit(cache=True)
+def _euclideanObjective(y, nVeh, dim):
+    """Sums the Euclidean distance between control points.
+
+    The Euclidean difference between each neighboring pair of control points is
+    summed for each vehicle.
+
+    :param y: Optimized vector that has been reshaped using the reshapeVector
+        function.
+    :type y: numpy.ndarray
+    :param nVeh: Number of vehicles
+    :type nVeh: int
+    :param dim: Dimension of the vehicles. Currently only works for 2D
+    :type dim: int
+    :return: Sum of the Euclidean distances
+    :rtype: float
+    """
+    summation = 0.0
+    temp = np.empty(dim)
+    length = y.shape[1]
+    for veh in range(nVeh):
+        for i in range(length-1):
+            for j in range(dim):
+                temp[j] = y[veh*dim+j, i+1] - y[veh*dim+j, i]
+
+            summation += _norm(temp)
+
+    return summation
+
+
+@njit(cache=True)
+def _norm(x):
+    summation = 0.0
+    for val in x:
+        summation += val*val
+
+    return np.sqrt(summation)
 
 
 def nonlinear_constraints(x, params):
@@ -140,16 +179,18 @@ def temporal_separation_cons(trajs, params):
     """
     nveh = params.nveh
 
-    loopCount = int(0.5*(nveh-1)*nveh)  # found using arithmetic series sum
-    distVeh = np.empty(loopCount)
-    idx = 0
+    # loopCount = int(0.5*(nveh-1)*nveh)  # found using arithmetic series sum
+    # distVeh = np.empty(loopCount)
+    distVeh = []
+    # idx = 0
     for i in range(nveh-1):
         for j in range(i+1, nveh):
             dv = trajs[i] - trajs[j]
-            distVeh[idx] = dv.normSquare().elev(DEG_ELEV).cpts.min()
-            idx += 1
+            # distVeh[idx] = dv.normSquare().elev(DEG_ELEV).cpts.min()
+            distVeh.append(dv.normSquare().elev(DEG_ELEV).cpts.squeeze())
+            # idx += 1
 
-    return distVeh - params.dsafe**2
+    return np.concatenate(distVeh) - params.dsafe**2
 
 
 def obstacle_cons(trajs, params):

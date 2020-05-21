@@ -14,7 +14,7 @@ from polynomial.bernstein import Bernstein
 
 
 SAVE_FIG = False     # Set to True to save figures
-FIG_FORMAT = 'png'  # Used for the output format when saving figures
+FIG_FORMAT = 'svg'  # Used for the output format when saving figures
 
 
 def convexHull(curve):
@@ -39,6 +39,7 @@ def convexHull(curve):
     for simplex in hull.simplices:
         ax.plot(cpts[0, simplex], cpts[1, simplex], 'k:')
 
+    plt.tight_layout()
     if SAVE_FIG:
         plt.savefig('Figures/ConvexHull.'+FIG_FORMAT, format=FIG_FORMAT)
 
@@ -87,6 +88,7 @@ def derivatives(curve):
     ax = cdot.plot()
     ax.set_title('Derivative of Curve 1')
 
+    plt.tight_layout()
     if SAVE_FIG:
         plt.savefig('Figures/Derivative.'+FIG_FORMAT, format=FIG_FORMAT)
 
@@ -115,6 +117,7 @@ def deCasteljau(curve, tdiv):
     ax1 = curve.plot()
     ax1.set_title('Curve Before Being Split')
 
+    plt.tight_layout()
     if SAVE_FIG:
         plt.savefig('Figures/Curve1.'+FIG_FORMAT, format=FIG_FORMAT)
 
@@ -124,6 +127,7 @@ def deCasteljau(curve, tdiv):
     ax2.set_title('Split Curve')
     plt.legend()
 
+    plt.tight_layout()
     if SAVE_FIG:
         plt.savefig('Figures/Curve1Split.'+FIG_FORMAT, format=FIG_FORMAT)
 
@@ -148,6 +152,7 @@ def degreeElevation(curve, elev):
     curve.elev(elev).plot(ax)
     ax.set_title('Elevated Curve')
 
+    plt.tight_layout()
     if SAVE_FIG:
         plt.savefig('Figures/ElevatedCurve.'+FIG_FORMAT, format=FIG_FORMAT)
 
@@ -168,10 +173,12 @@ def arithmetic(c1, c2):
     None.
 
     """
-    ax = c1.plot()
-    c2.plot(ax)
+    ax = c1.plot(label='Curve 1')
+    c2.plot(ax, label='Curve 2')
     ax.set_title('Curves C1 and C2')
+    ax.legend()
 
+    plt.tight_layout()
     if SAVE_FIG:
         plt.savefig('Figures/Curve1AndCurve2.'+FIG_FORMAT, format=FIG_FORMAT)
 
@@ -181,12 +188,14 @@ def arithmetic(c1, c2):
     summation.plot()
     plt.title('Sum of C1 and C2')
 
+    plt.tight_layout()
     if SAVE_FIG:
         plt.savefig('Figures/SumOfC1AndC2.'+FIG_FORMAT, format=FIG_FORMAT)
 
     product.plot()
     plt.title('Product of C1 and C2')
 
+    plt.tight_layout()
     if SAVE_FIG:
         plt.savefig('Figures/ProductOfC1AndC2.'+FIG_FORMAT, format=FIG_FORMAT)
 

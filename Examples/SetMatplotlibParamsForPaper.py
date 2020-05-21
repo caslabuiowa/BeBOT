@@ -18,7 +18,8 @@ plt.rcParams.update({
             'xtick.labelsize': 40,
             'ytick.labelsize': 40,
             'lines.linewidth': 4,
-            'lines.markersize': 18
+            'lines.markersize': 18,
+            'figure.figsize': [13.333, 10]
             })
 
 # Reset the matplotlib parameters
