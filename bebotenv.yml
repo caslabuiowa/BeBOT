@@ -1,0 +1,12 @@
+name: bebotenv
+channels:
+  - default
+  - conda-forge
+dependencies:
+  - cartopy
+  - matplotlib
+  - numba
+  - numpy
+  - pandas
+  - scipy
+  - spyder
