@@ -16,10 +16,11 @@ import numpy as np
 import pandas as pd
 import scipy.optimize as sop
 
-import bezier as bez
+# import bezier as bez
+from polynomial.bernstein import Bernstein
 
 
-DEG_ELEV = 10
+DEG_ELEV = 30
 
 
 class Parameters:
@@ -28,7 +29,7 @@ class Parameters:
     def __init__(self):
         self.deg = 3        # Order of approximation
         self.ndim = 3       # Number of dimensions
-        self.dsafe = 0.9      # Minimum safe distance between vehicles (m)
+        self.dsafe = 0.75      # Minimum safe distance between vehicles (m)
         self.odsafe = 2     # Minimum safe distance from obstacles (m)
 
         self.obsLoc = np.array([(13, 10),
@@ -109,7 +110,7 @@ def build_traj_list(y, params):
     """
     trajs = []
     for i in range(params.nveh):
-        trajs.append(bez.Bezier(y[i*params.ndim:(i+1)*params.ndim, :]))
+        trajs.append(Bernstein(y[i*params.ndim:(i+1)*params.ndim, :]))
 
     return trajs
 
