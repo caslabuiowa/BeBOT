@@ -6,6 +6,11 @@ Created on Tue Mar 24 10:38:09 2020
 @author: ckielasjensen
 """
 
+try:
+    from openGJK_cython import pygjk
+except:
+    print('[!] Warning: OpenGJK library not installed.')
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from numba import jit, njit
@@ -315,7 +320,7 @@ class Bernstein(Base):
         return newCurve
 
     def div(self, denominator):
-        """Divides one Bernstein polynomial by another
+        """Divides one Bernstein polynomial by another.
 
         The division of two Bernstein polynomials results in a rational
         Bernstein polynomial.
@@ -347,11 +352,11 @@ class Bernstein(Base):
         weights = denominator.cpts
 
         return RationalBernstein(cpts.astype(np.float64),
-                              weights.astype(np.float64),
-                              t0=self.t0, tf=self.tf)
+                                 weights.astype(np.float64),
+                                 t0=self.t0, tf=self.tf)
 
     def elev(self, R=1):
-        """Elevates the degree of the Bernstein polynomial
+        """Elevates the degree of the Bernstein polynomial.
 
         Elevates the degree of the Bernstein polynomial by R (default is 1)
         and returns a new, higher degree Bernstein object.
