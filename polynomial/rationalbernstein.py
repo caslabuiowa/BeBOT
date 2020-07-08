@@ -20,16 +20,18 @@ class RationalBernstein(Base):
         super().__init__(cpts=cpts, t0=t0, tf=tf)
         self._wgts = np.array(weights, ndmin=2)
 
-    def plot(self, ax=None, npts=1001):
+    def plot(self, ax=None, npts=1001, showCpts=True, **kwargs):
         if ax is None:
             fig, ax = plt.subplots()
 
-        # TODO handle plotting the control points if desired
         if self.dim == 1:
             c = self.curve(npts=npts)
             T = np.linspace(self._t0, self._tf, npts)
+            ax.plot(T, c.squeeze(), **kwargs)
 
-            ax.plot(T, c.squeeze())
+            if showCpts:
+                ax.plot(np.linspace(self.t0, self.tf, self.deg+1),
+                        self.cpts.squeeze(), '.--')
 
         # TODO plot higher dimensions
         else:

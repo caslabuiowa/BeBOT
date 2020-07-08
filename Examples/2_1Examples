@@ -48,8 +48,8 @@ def resetRCParams():
 def initialPlot(c1, c2, obs):
     fig, ax = plt.subplots()
 
-    c1.plot(ax)
-    c2.plot(ax)
+    c1.plot(ax, color='C0', label='c1')
+    c2.plot(ax, color='C1', label='c2')
     ax.add_patch(obs)
 
     ax.set_title('Initial Figure')
@@ -57,13 +57,14 @@ def initialPlot(c1, c2, obs):
     ax.set_ylabel('Y Position')
     ax.set_xlim(XLIM)
     ax.set_ylim(YLIM)
+    ax.legend()
 
 
 def endPoints(c1, c2, obs):
     fig, ax = plt.subplots()
 
-    c1.plot(ax, showCpts=False)
-    c2.plot(ax, showCpts=False)
+    c1.plot(ax, showCpts=False, color='C0')
+    c2.plot(ax, showCpts=False, color='C1')
     ax.add_patch(obs)
 
     for i, pt in enumerate(np.concatenate([c1.cpts[:, (0, -1)].T, c2.cpts[:, (0, -1)].T])):
@@ -88,8 +89,8 @@ def convexHull(c1, c2, obs):
     for cpts in [c1.cpts, c2.cpts]:
         plotCvxHull(cpts, ax)
 
-    c1.plot(ax)
-    c2.plot(ax)
+    c1.plot(ax, color='C0')
+    c2.plot(ax, color='C1')
     ax.add_patch(obs)
 
     ax.set_title('Convex Hull')
@@ -105,10 +106,10 @@ def convexHullSplit(c1, c2, obs):
     c1L, c1R = c1.split(0.5*(c1.tf-c1.t0)+c1.t0)
     c2L, c2R = c2.split(0.5*(c2.tf-c2.t0)+c2.t0)
 
-    c1L.plot(ax)
-    c1R.plot(ax)
-    c2L.plot(ax)
-    c2R.plot(ax)
+    c1L.plot(ax, color='C0')
+    c1R.plot(ax, color='C2')
+    c2L.plot(ax, color='C1')
+    c2R.plot(ax, color='C3')
 
     for cpts in [c1L.cpts, c1R.cpts, c2L.cpts, c2R.cpts]:
         plotCvxHull(cpts, ax)
@@ -127,8 +128,8 @@ def convexHullElev(c1, c2, obs):
     c1E = c1.elev(10)
     c2E = c2.elev(10)
 
-    c1E.plot(ax)
-    c2E.plot(ax)
+    c1E.plot(ax, color='C0')
+    c2E.plot(ax, color='C1')
 
     for cpts in [c1E.cpts, c2E.cpts]:
         plotCvxHull(cpts, ax)
@@ -147,8 +148,8 @@ def speedSquared(c1, c2):
     c1speed = c1.diff().normSquare()
     c2speed = c2.diff().normSquare()
 
-    c1speed.plot(ax)
-    c2speed.plot(ax)
+    c1speed.plot(ax, color='C0', label='c1 speed')
+    c2speed.plot(ax, color='C1', label='c2 speed')
 
     cpts1 = np.concatenate([[np.linspace(c1speed.t0, c1speed.tf, c1speed.deg+1)],
                             c1speed.cpts])
@@ -160,6 +161,7 @@ def speedSquared(c1, c2):
     ax.set_title('Speed Squared')
     ax.set_xlabel('Time')
     ax.set_ylabel('Squared Speed')
+    ax.legend()
 
 
 def headingAngle(c1, c2):
@@ -176,11 +178,12 @@ def headingAngle(c1, c2):
     npts2 = c2ang.shape[1]
     T2 = np.linspace(c2.t0, c2.tf, npts2)
 
-    ax.plot(T1, c1ang.squeeze())
-    ax.plot(T2, c2ang.squeeze())
+    ax.plot(T1, c1ang.squeeze(), color='C0', label='c1 heading')
+    ax.plot(T2, c2ang.squeeze(), color='C1', label='c2 heading')
     ax.set_title('Heading Angle')
     ax.set_xlabel('Time')
     ax.set_ylabel('Heading Angle (Rad)')
+    ax.legend()
 
 
 def angularRate(c1, c2):
@@ -194,11 +197,12 @@ def angularRate(c1, c2):
     cpts2 = np.concatenate([[np.linspace(angrate2.t0, angrate2.tf, angrate2.deg+1)],
                             angrate2.cpts])
 
-    angrate1.plot(ax)
-    angrate2.plot(ax)
+    angrate1.plot(ax, showCpts=False, color='C0', label='c1 angular rate')
+    angrate2.plot(ax, showCpts=False, color='C1', label='c2 angular rate')
     ax.set_title('Angular Rate Squared')
     ax.set_xlabel('Time')
     ax.set_ylabel('Angular Rate')
+    ax.legend()
 
 
 def distSqr(c1, c2, obs):
@@ -210,13 +214,14 @@ def distSqr(c1, c2, obs):
     c1obs = c1 - obsPoly
     c2obs = c2 - obsPoly
 
-    c1c2.normSquare().plot(ax)
-    c1obs.normSquare().plot(ax)
-    c2obs.normSquare().plot(ax)
+    c1c2.normSquare().plot(ax, label='c1 to c2')
+    c1obs.normSquare().plot(ax, label='c1 to obstacle')
+    c2obs.normSquare().plot(ax, label='c2 to obstacle')
 
     ax.set_title('Squared Distance Between Trajectories and Obstacle', wrap=True)
     ax.set_xlabel('Time')
     ax.set_ylabel('Squared Distance')
+    ax.legend()
 
 
 def _angularRateSqr(bp):
@@ -252,10 +257,11 @@ def saveFigs():
         os.mkdir(FIG_DIR)
 
     for i in plt.get_fignums():
-        print(f'Saving figure {i}')
         fig = plt.figure(i)
         ax = fig.get_axes()[0]
         title = ax.get_title()
+        print(f'Saving figure {i} - {title}')
+
         ax.set_title('')
         plt.tight_layout()
         plt.draw()
