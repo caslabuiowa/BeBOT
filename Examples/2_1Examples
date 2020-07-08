@@ -53,8 +53,8 @@ def initialPlot(c1, c2, obs):
     ax.add_patch(obs)
 
     ax.set_title('Initial Figure')
-    ax.set_xlabel('X Position')
-    ax.set_ylabel('Y Position')
+    ax.set_xlabel('X Position (m)')
+    ax.set_ylabel('Y Position (m)')
     ax.set_xlim(XLIM)
     ax.set_ylim(YLIM)
     ax.legend()
@@ -77,8 +77,8 @@ def endPoints(c1, c2, obs):
             ax.text(pt[0], pt[1], f'({pt[0]}, {pt[1]})')
 
     ax.set_title('End Points')
-    ax.set_xlabel('X Position')
-    ax.set_ylabel('Y Position')
+    ax.set_xlabel('X Position (m)')
+    ax.set_ylabel('Y Position (m)')
     ax.set_xlim(XLIM)
     ax.set_ylim(YLIM)
 
@@ -94,8 +94,8 @@ def convexHull(c1, c2, obs):
     ax.add_patch(obs)
 
     ax.set_title('Convex Hull')
-    ax.set_xlabel('X Position')
-    ax.set_ylabel('Y Position')
+    ax.set_xlabel('X Position (m)')
+    ax.set_ylabel('Y Position (m)')
     ax.set_xlim(XLIM)
     ax.set_ylim(YLIM)
 
@@ -116,8 +116,8 @@ def convexHullSplit(c1, c2, obs):
 
     ax.add_patch(obs)
     ax.set_title('Split Convex Hull')
-    ax.set_xlabel('X Position')
-    ax.set_ylabel('Y Position')
+    ax.set_xlabel('X Position (m)')
+    ax.set_ylabel('Y Position (m)')
     ax.set_xlim(XLIM)
     ax.set_ylim(YLIM)
 
@@ -136,8 +136,8 @@ def convexHullElev(c1, c2, obs):
 
     ax.add_patch(obs)
     ax.set_title('Elevated Convex Hull')
-    ax.set_xlabel('X Position')
-    ax.set_ylabel('Y Position')
+    ax.set_xlabel('X Position (m)')
+    ax.set_ylabel('Y Position (m)')
     ax.set_xlim(XLIM)
     ax.set_ylim(YLIM)
 
@@ -159,8 +159,8 @@ def speedSquared(c1, c2):
     plotCvxHull(cpts2, ax)
 
     ax.set_title('Speed Squared')
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Squared Speed')
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel(r'Squared Speed $\left( \frac{m}{s} \right)^2$')
     ax.legend()
 
 
@@ -170,36 +170,32 @@ def headingAngle(c1, c2):
     c1dot = c1.diff()
     c2dot = c2.diff()
 
-    c1ang = np.arctan2(c1dot.y.curve, c1dot.x.curve)
-    c2ang = np.arctan2(c2dot.y.curve, c2dot.x.curve)
+    c1tan = c1dot.y / c1dot.x
+    c2tan = c2dot.y / c2dot.x
 
-    npts1 = c1ang.shape[1]
-    T1 = np.linspace(c1.t0, c1.tf, npts1)
-    npts2 = c2ang.shape[1]
-    T2 = np.linspace(c2.t0, c2.tf, npts2)
-
-    ax.plot(T1, c1ang.squeeze(), color='C0', label='c1 heading')
-    ax.plot(T2, c2ang.squeeze(), color='C1', label='c2 heading')
-    ax.set_title('Heading Angle')
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Heading Angle (Rad)')
+    c1tan.plot(ax, color='C0', label='c1 tangent')
+    c2tan.plot(ax, color='C1', label='c2 tangent')
+    ax.set_title('Tangent of Heading Angle')
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel(r'$\tan (\psi)$')
     ax.legend()
 
 
 def angularRate(c1, c2):
     fig, ax = plt.subplots()
 
-    angrate1 = _angularRateSqr(c1)
-    angrate2 = _angularRateSqr(c2)
+    angrate1 = _angularRate(c1)
+    angrate2 = _angularRate(c2)
 
-    cpts1 = np.concatenate([[np.linspace(angrate1.t0, angrate1.tf, angrate1.deg+1)],
-                            angrate1.cpts])
-    cpts2 = np.concatenate([[np.linspace(angrate2.t0, angrate2.tf, angrate2.deg+1)],
-                            angrate2.cpts])
 
-    angrate1.plot(ax, showCpts=False, color='C0', label='c1 angular rate')
-    angrate2.plot(ax, showCpts=False, color='C1', label='c2 angular rate')
-    ax.set_title('Angular Rate Squared')
+    cpts1 = np.concatenate([[np.linspace(angrate1.t0, angrate1.tf, angrate1.deg+1)], angrate1.cpts])
+    cpts2 = np.concatenate([[np.linspace(angrate2.t0, angrate2.tf, angrate2.deg+1)], angrate2.cpts])
+    plotCvxHull(cpts1, ax)
+    plotCvxHull(cpts2, ax)
+
+    angrate1.plot(ax, color='C0', label='c1 angular rate')
+    angrate2.plot(ax, color='C1', label='c2 angular rate')
+    ax.set_title('Angular Rate')
     ax.set_xlabel('Time')
     ax.set_ylabel('Angular Rate')
     ax.legend()
@@ -224,7 +220,7 @@ def distSqr(c1, c2, obs):
     ax.legend()
 
 
-def _angularRateSqr(bp):
+def _angularRate(bp):
     bpdot = bp.diff()
     bpddot = bpdot.diff()
 
@@ -236,10 +232,10 @@ def _angularRateSqr(bp):
     num = yddot*xdot - xddot*ydot
     den = xdot*xdot + ydot*ydot
 
-    # cpts = num.elev(DEG_ELEV).cpts**2 / den.elev(DEG_ELEV).cpts**2
-    # wgts = den.elev(DEG_ELEV).cpts**2
-    cpts = num.cpts**2 / den.cpts**2
-    wgts = den.cpts**2
+    cpts = num.elev(DEG_ELEV).cpts / den.elev(DEG_ELEV).cpts
+    wgts = den.elev(DEG_ELEV).cpts
+    # cpts = num.cpts / den.cpts
+    # wgts = den.cpts
 
     return RationalBernstein(cpts, wgts, bp.t0, bp.tf)
 

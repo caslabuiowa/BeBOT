@@ -13,6 +13,11 @@ from scipy.special import binom
 
 from polynomial.base import Base
 
+# TODO de Cast for rational BP
+# TODO elevate for rational BP
+# TODO elevate degree if weight of rBP is negative
+# TODO function to normalize rBP to canonical form (w0 = wn = 1)
+
 
 class RationalBernstein(Base):
     def __init__(self, cpts=None, weights=None, t0=0.0, tf=1.0):
@@ -101,8 +106,8 @@ if __name__ == '__main__':
     npts = 1001
     cpts = np.array([[0, 1, 2, 3, 4, 5],
                      [3, 7, 5, 2, 6, 2]], dtype=float)
-    wgts = np.array([[1, 1, 0, 1, 1, 1],
-                     [1, 1, 0, 1, 1, 1]], dtype=float)
+    wgts = np.array([[0.5, 1, 10, 1, -1, 3],
+                     [0.5, 1, 10, 1, -1, 3]], dtype=float)
 
     ratc = _ratBernPoly(cpts, wgts, npts)
 
