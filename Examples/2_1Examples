@@ -196,8 +196,8 @@ def angularRate(c1, c2):
     angrate1.plot(ax, color='C0', label='c1 angular rate')
     angrate2.plot(ax, color='C1', label='c2 angular rate')
     ax.set_title('Angular Rate')
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Angular Rate')
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel(r'Angular Rate $\left( \frac{rad}{s^2} \right)$')
     ax.legend()
 
 
@@ -215,8 +215,8 @@ def distSqr(c1, c2, obs):
     c2obs.normSquare().plot(ax, label='c2 to obstacle')
 
     ax.set_title('Squared Distance Between Trajectories and Obstacle', wrap=True)
-    ax.set_xlabel('Time')
-    ax.set_ylabel('Squared Distance')
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel(r'Squared Distance $(m^2)$')
     ax.legend()
 
 
