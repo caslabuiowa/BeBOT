@@ -196,7 +196,7 @@ def accelSquared(c1, c2):
     plotCvxHull2D(cpts1, ax)
     plotCvxHull2D(cpts2, ax)
 
-    ax.set_title('3D Speed Squared')
+    ax.set_title('3D Acceleration Squared')
     ax.set_xlabel('Time (s)')
     ax.set_ylabel(r'Squared Acceleration $\left( \frac{m}{s^2} \right)^2$')
     ax.legend()
