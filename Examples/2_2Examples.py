@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jul  6 10:03:00 2020
+Created on Wed Jul  8 21:29:21 2020
 
 @author: ckielasjensen
 """
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import numpy as np
 from scipy.spatial import ConvexHull, convex_hull_plot_2d
 
@@ -18,9 +19,39 @@ from polynomial.rationalbernstein import RationalBernstein
 
 SAVE_FIG = True         # Set to True to save figures
 FIG_FORMAT = 'svg'      # Used for the output format when saving figures
-FIG_DIR = 'Figures'     # Directory in which to save the figures
-XLIM = [-0.5, 12.5]
-YLIM = [-0.5, 12.5]
+FIG_DIR = 'Figures_3D'     # Directory in which to save the figures
+XLIM = [0, 11]
+YLIM = [0, 11]
+ZLIM = [0, 11]
+ELEV = 55               # Elevation angle for 3D plot
+AZIM = 45               # Azimuth angle for 3D plot
+
+class Sphere:
+    def __init__(self, x, y, z, r, color=None):
+        self.x = x
+        self.y = y
+        self.z = z
+        self.r = r
+        self.color = color
+
+    @property
+    def center(self):
+        return (self.x, self.y, self.z)
+
+    def plot(self, ax=None, **kwargs):
+        if ax is None:
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+
+        u = np.linspace(0, 2*np.pi, 100)
+        v = np.linspace(0, np.pi, 100)
+        x = np.outer(np.cos(u), np.sin(v))*self.r + self.x
+        y = np.outer(np.sin(u), np.sin(v))*self.r + self.y
+        z = np.outer(np.ones(np.size(u)), np.cos(v))*self.r + self.z
+        if self.color:
+            ax.plot_surface(x, y, z, color=self.color, **kwargs)
+        else:
+            ax.plot_surface(x, y, z, **kwargs)
 
 
 def setRCParams():
@@ -45,68 +76,63 @@ def resetRCParams():
     plt.rcParams.update(plt.rcParamsDefault)
 
 
-def initialPlot(c1, c2, obs):
-    fig, ax = plt.subplots()
-
-    c1.plot(ax, color='C0', label='c1')
-    c2.plot(ax, color='C1', label='c2')
-    ax.add_patch(obs)
-
-    ax.set_title('Initial Figure')
-    ax.set_xlabel('X Position (m)')
-    ax.set_ylabel('Y Position (m)')
+def formatPlot(ax, title, xlabel='X Position (m)', ylabel='Y Position (m)', zlabel='Z Position (m)'):
+    ax.set_title(title)
     ax.set_xlim(XLIM)
     ax.set_ylim(YLIM)
+    ax.set_zlim(ZLIM)
+    ax.set_xlabel(xlabel, labelpad=30)
+    ax.set_ylabel(ylabel, labelpad=30)
+    ax.set_zlabel(zlabel, labelpad=30)
+    ax.view_init(ELEV, AZIM)
+
+
+def initPlot(c1, c2, obs):
+    ax = c1.plot(color='C0', label='c1')
+    c2.plot(ax, color='C1', label='c2')
+    obs.plot(ax)
+
+    formatPlot(ax, '3D Initial Figure')
     ax.legend()
 
 
 def endPoints(c1, c2, obs):
-    fig, ax = plt.subplots()
-
-    c1.plot(ax, showCpts=False, color='C0')
+    ax = c1.plot(showCpts=False, color='C0')
     c2.plot(ax, showCpts=False, color='C1')
-    ax.add_patch(obs)
+    obs.plot(ax)
 
     for i, pt in enumerate(np.concatenate([c1.cpts[:, (0, -1)].T, c2.cpts[:, (0, -1)].T])):
-        ax.plot(pt[0], pt[1], 'k.')
+        ax.plot([pt[0]], [pt[1]], [pt[2]], 'k.')
 
         # This if statement is purely for modifying the position of the drawn coordinates
-        if i % 2:
-            ax.text(pt[0]-3.5, pt[1]-1, f'({pt[0]}, {pt[1]})')
+        if i == 0:
+            ax.text(pt[0]+3, pt[1]-3, pt[2], f'({pt[0]}, {pt[1]})')
+        elif i == 1:
+            ax.text(pt[0]-1, pt[1]-1, pt[2], f'({pt[0]}, {pt[1]})')
+        elif i == 3:
+            ax.text(pt[0]+2, pt[1]+2, pt[2], f'({pt[0]}, {pt[1]})')
         else:
-            ax.text(pt[0], pt[1], f'({pt[0]}, {pt[1]})')
+            ax.text(pt[0], pt[1], pt[2], f'({pt[0]}, {pt[1]})')
 
-    ax.set_title('End Points')
-    ax.set_xlabel('X Position (m)')
-    ax.set_ylabel('Y Position (m)')
-    ax.set_xlim(XLIM)
-    ax.set_ylim(YLIM)
+    formatPlot(ax, '3D End Points')
 
 
 def convexHull(c1, c2, obs):
-    fig, ax = plt.subplots()
+    ax = c1.plot(color='C0')
+    c2.plot(ax, color='C1')
+    obs.plot(ax)
 
     for cpts in [c1.cpts, c2.cpts]:
         plotCvxHull(cpts, ax)
 
-    c1.plot(ax, color='C0')
-    c2.plot(ax, color='C1')
-    ax.add_patch(obs)
-
-    ax.set_title('Convex Hull')
-    ax.set_xlabel('X Position (m)')
-    ax.set_ylabel('Y Position (m)')
-    ax.set_xlim(XLIM)
-    ax.set_ylim(YLIM)
+    formatPlot(ax, '3D Convex Hull')
 
 
 def convexHullSplit(c1, c2, obs):
-    fig, ax = plt.subplots()
-
     c1L, c1R = c1.split(0.5*(c1.tf-c1.t0)+c1.t0)
     c2L, c2R = c2.split(0.5*(c2.tf-c2.t0)+c2.t0)
 
-    c1L.plot(ax, color='C0')
+    ax = c1L.plot(color='C0')
     c1R.plot(ax, color='C2')
     c2L.plot(ax, color='C1')
     c2R.plot(ax, color='C3')
@@ -114,32 +140,22 @@ def convexHullSplit(c1, c2, obs):
     for cpts in [c1L.cpts, c1R.cpts, c2L.cpts, c2R.cpts]:
         plotCvxHull(cpts, ax)
 
-    ax.add_patch(obs)
-    ax.set_title('Split Convex Hull')
-    ax.set_xlabel('X Position (m)')
-    ax.set_ylabel('Y Position (m)')
-    ax.set_xlim(XLIM)
-    ax.set_ylim(YLIM)
+    obs.plot(ax)
+    formatPlot(ax, '3D Split Convex Hull')
 
 
 def convexHullElev(c1, c2, obs):
-    fig, ax = plt.subplots()
-
     c1E = c1.elev(10)
     c2E = c2.elev(10)
 
-    c1E.plot(ax, color='C0')
+    ax = c1E.plot(color='C0')
     c2E.plot(ax, color='C1')
 
     for cpts in [c1E.cpts, c2E.cpts]:
         plotCvxHull(cpts, ax)
 
-    ax.add_patch(obs)
-    ax.set_title('Elevated Convex Hull')
-    ax.set_xlabel('X Position (m)')
-    ax.set_ylabel('Y Position (m)')
-    ax.set_xlim(XLIM)
-    ax.set_ylim(YLIM)
+    obs.plot(ax)
+    formatPlot(ax, '3D Elevated Convex Hull')
 
 
 def speedSquared(c1, c2):
@@ -155,56 +171,41 @@ def speedSquared(c1, c2):
                             c1speed.cpts])
     cpts2 = np.concatenate([[np.linspace(c2speed.t0, c2speed.tf, c2speed.deg+1)],
                             c2speed.cpts])
-    plotCvxHull(cpts1, ax)
-    plotCvxHull(cpts2, ax)
+    plotCvxHull2D(cpts1, ax)
+    plotCvxHull2D(cpts2, ax)
 
-    ax.set_title('Speed Squared')
+    ax.set_title('3D Speed Squared')
     ax.set_xlabel('Time (s)')
     ax.set_ylabel(r'Squared Speed $\left( \frac{m}{s} \right)^2$')
     ax.legend()
 
 
-def headingAngle(c1, c2):
+def accelSquared(c1, c2):
     fig, ax = plt.subplots()
 
-    c1dot = c1.diff()
-    c2dot = c2.diff()
+    c1speed = c1.diff().diff().normSquare()
+    c2speed = c2.diff().diff().normSquare()
 
-    c1tan = c1dot.y / c1dot.x
-    c2tan = c2dot.y / c2dot.x
+    c1speed.plot(ax, color='C0', label='c1 accel')
+    c2speed.plot(ax, color='C1', label='c2 accel')
 
-    c1tan.plot(ax, color='C0', label='c1 tangent')
-    c2tan.plot(ax, color='C1', label='c2 tangent')
-    ax.set_title('Tangent of Heading Angle')
+    cpts1 = np.concatenate([[np.linspace(c1speed.t0, c1speed.tf, c1speed.deg+1)],
+                            c1speed.cpts])
+    cpts2 = np.concatenate([[np.linspace(c2speed.t0, c2speed.tf, c2speed.deg+1)],
+                            c2speed.cpts])
+    plotCvxHull2D(cpts1, ax)
+    plotCvxHull2D(cpts2, ax)
+
+    ax.set_title('3D Speed Squared')
     ax.set_xlabel('Time (s)')
-    ax.set_ylabel(r'$\tan (\psi)$')
-    ax.legend()
-
-
-def angularRate(c1, c2):
-    fig, ax = plt.subplots()
-
-    angrate1 = _angularRate(c1)
-    angrate2 = _angularRate(c2)
-
-
-    cpts1 = np.concatenate([[np.linspace(angrate1.t0, angrate1.tf, angrate1.deg+1)], angrate1.cpts])
-    cpts2 = np.concatenate([[np.linspace(angrate2.t0, angrate2.tf, angrate2.deg+1)], angrate2.cpts])
-    plotCvxHull(cpts1, ax)
-    plotCvxHull(cpts2, ax)
-
-    angrate1.plot(ax, color='C0', label='c1 angular rate')
-    angrate2.plot(ax, color='C1', label='c2 angular rate')
-    ax.set_title('Angular Rate')
-    ax.set_xlabel('Time (s)')
-    ax.set_ylabel(r'Angular Rate $\left( \frac{rad}{s^2} \right)$')
+    ax.set_ylabel(r'Squared Acceleration $\left( \frac{m}{s^2} \right)^2$')
     ax.legend()
 
 
 def distSqr(c1, c2, obs):
     fig, ax = plt.subplots()
 
-    obsPoly = Bernstein(np.atleast_2d(obs.center).T*np.ones((2, c1.deg+1)), min(c1.t0, c2.t0), max(c1.tf, c2.tf))
+    obsPoly = Bernstein(np.atleast_2d(obs.center).T*np.ones((3, c1.deg+1)), min(c1.t0, c2.t0), max(c1.tf, c2.tf))
 
     c1c2 = c1 - c2
     c1obs = c1 - obsPoly
@@ -240,7 +241,7 @@ def _angularRate(bp):
     return RationalBernstein(cpts, wgts, bp.t0, bp.tf)
 
 
-def plotCvxHull(cpts, ax):
+def plotCvxHull2D(cpts, ax):
     hull = ConvexHull(cpts.T)
     for simplex in hull.simplices:
         ax.plot(cpts[0, simplex], cpts[1, simplex], 'k:')
@@ -269,34 +270,42 @@ def saveFigs():
     print('Done saving figures')
 
 
+def plotCvxHull(cpts, ax):
+    hull = ConvexHull(cpts.T)
+    for simplex in hull.simplices:
+        tri = Poly3DCollection((np.array([cpts[0, simplex], cpts[1, simplex], cpts[2, simplex]]).T))
+        tri.set_alpha(0.5)
+        tri.set_edgecolor('k')
+        ax.add_collection3d(tri)
+
+
 if __name__ == '__main__':
     plt.close('all')
     setRCParams()
 
-    # Rectangle obstacle
-    def obs(): return Circle((3, 4), 1, ec='k', lw=4)
-    # Control points
-    cpts1 = np.array([[0, 2, 4, 6, 8, 10],
-                      [5, 0, 2, 3, 10, 3]], dtype=float)
-    cpts2 = np.array([[1, 3, 6, 8, 10, 12],
-                      [6, 9, 10, 11, 8, 8]], dtype=float)
-    # Bernstein polynomials
+    obs = Sphere(4, 5, 5, 1, color='b')
+
+    cpts1 = np.array([[7, 3, 1, 1, 3, 7],
+                      [1, 2, 3, 8, 3, 5],
+                      [0, 2, 1, 9, 8, 10]], dtype=float)
+    cpts2 = np.array([[1, 1, 4, 4, 8, 8],
+                      [5, 6, 9, 10, 8, 6],
+                      [1, 1, 3, 5, 11, 6]], dtype=float)
+
     c1 = Bernstein(cpts1, t0=10, tf=20)
     c2 = Bernstein(cpts2, t0=10, tf=20)
 
-    initialPlot(c1, c2, obs())
-    endPoints(c1, c2, obs())
-    convexHull(c1, c2, obs())
-    convexHullSplit(c1, c2, obs())
-    convexHullElev(c1, c2, obs())
+    initPlot(c1, c2, obs)
+    endPoints(c1, c2, obs)
+    convexHull(c1, c2, obs)
+    convexHullSplit(c1, c2, obs)
+    convexHullElev(c1, c2, obs)
     speedSquared(c1, c2)
-    headingAngle(c1, c2)
-    angularRate(c1, c2)
-    distSqr(c1, c2, obs())
-
-    plt.show()
+    accelSquared(c1, c2)
+    distSqr(c1, c2, obs)
 
     if SAVE_FIG:
         saveFigs()
 
+    plt.show()
     resetRCParams()
