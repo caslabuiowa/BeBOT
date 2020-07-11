@@ -215,7 +215,7 @@ def distSqr(c1, c2, obs):
     c1obs.normSquare().plot(ax, label='c1 to obstacle')
     c2obs.normSquare().plot(ax, label='c2 to obstacle')
 
-    ax.set_title('Squared Distance Between Trajectories and Obstacle', wrap=True)
+    ax.set_title('3D Squared Distance Between Trajectories and Obstacle', wrap=True)
     ax.set_xlabel('Time (s)')
     ax.set_ylabel(r'Squared Distance $(m^2)$')
     ax.legend()
