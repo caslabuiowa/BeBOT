@@ -88,8 +88,8 @@ def formatPlot(ax, title, xlabel='X Position (m)', ylabel='Y Position (m)', zlab
 
 
 def initPlot(c1, c2, obs):
-    ax = c1.plot(color='C0', label='c1')
-    c2.plot(ax, color='C1', label='c2')
+    ax = c1.plot(color='C0', label='c3')
+    c2.plot(ax, color='C1', label='c4')
     obs.plot(ax)
 
     formatPlot(ax, '3D Initial Figure')
@@ -164,8 +164,8 @@ def speedSquared(c1, c2):
     c1speed = c1.diff().normSquare()
     c2speed = c2.diff().normSquare()
 
-    c1speed.plot(ax, color='C0', label='c1 speed')
-    c2speed.plot(ax, color='C1', label='c2 speed')
+    c1speed.plot(ax, color='C0', label='c3 speed')
+    c2speed.plot(ax, color='C1', label='c4 speed')
 
     cpts1 = np.concatenate([[np.linspace(c1speed.t0, c1speed.tf, c1speed.deg+1)],
                             c1speed.cpts])
@@ -186,8 +186,8 @@ def accelSquared(c1, c2):
     c1speed = c1.diff().diff().normSquare()
     c2speed = c2.diff().diff().normSquare()
 
-    c1speed.plot(ax, color='C0', label='c1 accel')
-    c2speed.plot(ax, color='C1', label='c2 accel')
+    c1speed.plot(ax, color='C0', label='c3 accel')
+    c2speed.plot(ax, color='C1', label='c4 accel')
 
     cpts1 = np.concatenate([[np.linspace(c1speed.t0, c1speed.tf, c1speed.deg+1)],
                             c1speed.cpts])
@@ -211,9 +211,9 @@ def distSqr(c1, c2, obs):
     c1obs = c1 - obsPoly
     c2obs = c2 - obsPoly
 
-    c1c2.normSquare().plot(ax, label='c1 to c2')
-    c1obs.normSquare().plot(ax, label='c1 to obstacle')
-    c2obs.normSquare().plot(ax, label='c2 to obstacle')
+    c1c2.normSquare().plot(ax, label='c3 to c4')
+    c1obs.normSquare().plot(ax, label='c3 to obstacle')
+    c2obs.normSquare().plot(ax, label='c4 to obstacle')
 
     ax.set_title('3D Squared Distance Between Trajectories and Obstacle', wrap=True)
     ax.set_xlabel('Time (s)')
@@ -285,24 +285,24 @@ if __name__ == '__main__':
 
     obs = Sphere(4, 5, 5, 1, color='b')
 
-    cpts1 = np.array([[7, 3, 1, 1, 3, 7],
+    cpts3 = np.array([[7, 3, 1, 1, 3, 7],
                       [1, 2, 3, 8, 3, 5],
                       [0, 2, 1, 9, 8, 10]], dtype=float)
-    cpts2 = np.array([[1, 1, 4, 4, 8, 8],
+    cpts4 = np.array([[1, 1, 4, 4, 8, 8],
                       [5, 6, 9, 10, 8, 6],
                       [1, 1, 3, 5, 11, 6]], dtype=float)
 
-    c1 = Bernstein(cpts1, t0=10, tf=20)
-    c2 = Bernstein(cpts2, t0=10, tf=20)
+    c3 = Bernstein(cpts3, t0=10, tf=20)
+    c4 = Bernstein(cpts4, t0=10, tf=20)
 
-    initPlot(c1, c2, obs)
-    endPoints(c1, c2, obs)
-    convexHull(c1, c2, obs)
-    convexHullSplit(c1, c2, obs)
-    convexHullElev(c1, c2, obs)
-    speedSquared(c1, c2)
-    accelSquared(c1, c2)
-    distSqr(c1, c2, obs)
+    initPlot(c3, c4, obs)
+    endPoints(c3, c4, obs)
+    convexHull(c3, c4, obs)
+    convexHullSplit(c3, c4, obs)
+    convexHullElev(c3, c4, obs)
+    speedSquared(c3, c4)
+    accelSquared(c3, c4)
+    distSqr(c3, c4, obs)
 
     if SAVE_FIG:
         saveFigs()
