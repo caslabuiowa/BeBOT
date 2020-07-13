@@ -366,6 +366,9 @@ class Bernstein(Base):
         :return: Elevated Bernstein polynomial
         :rtype: Bernstein
         """
+        if R < 1:
+            return self
+
         try:
             elevMat = Bernstein.elevMatCache[self.deg][R]
         except KeyError:
@@ -552,8 +555,13 @@ class Bernstein(Base):
         elif minIdx != 0 and minIdx != self.deg:
             splitPoint = minIdx / self.deg
             c1, c2 = self.split(splitPoint)
-            c1min = c1.min(dim=dim, globMin=newMin, tol=tol)
-            c2min = c2.min(dim=dim, globMin=newMin, tol=tol)
+            try:
+                c1min = c1.min(dim=dim, globMin=newMin, tol=tol)
+                c2min = c2.min(dim=dim, globMin=newMin, tol=tol)
+            except RecursionError as e:
+                print('[!] Runtime error in Bernstein.min()')
+                print(e)
+                return newMin
 
             newMin = min((c1min, c2min))
 

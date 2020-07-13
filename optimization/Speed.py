@@ -11,7 +11,7 @@ import numpy as np
 from constants import DEG_ELEV
 
 
-def speed(bp):
+def speed(bp, elev=DEG_ELEV):
     """
     Finds the speed of the Bernstein polynomial using degree elevation.
 
@@ -30,7 +30,7 @@ def speed(bp):
         of the BP passed in.
 
     """
-    speed = bp.diff().normSquare().elev(DEG_ELEV).cpts.flatten()
+    speed = bp.diff().normSquare().elev(elev).cpts.flatten()
 
     return speed
 

@@ -13,7 +13,7 @@ from polynomial.bernstein import Bernstein
 from polynomial.rationalbernstein import RationalBernstein
 
 
-def angularRate(bp):
+def angularRate(bp, elev=DEG_ELEV):
     bpdot = bp.diff()
     bpddot = bpdot.diff()
 
@@ -25,7 +25,7 @@ def angularRate(bp):
     num = yddot*xdot - xddot*ydot
     den = xdot*xdot + ydot*ydot
 
-    cpts = num.elev(DEG_ELEV).cpts**2 / den.elev(DEG_ELEV).cpts**2
+    cpts = num.elev(elev).cpts / den.elev(elev).cpts
 
     return cpts.squeeze()
 

@@ -11,12 +11,15 @@ from constants import DEG_ELEV
 from polynomial.bernstein import Bernstein
 
 
-def obstacleAvoidance(trajs, obstacles):
+def obstacleAvoidance(trajs, obstacles, elev=DEG_ELEV):
     distObs = []
     for traj in trajs:
         for obs in obstacles:
             do = traj - _obs2bp(obs, traj.deg, traj.t0, traj.tf)
-            distObs.append(do.normSquare().elev(DEG_ELEV).cpts)
+            if elev is np.inf:
+                distObs.append(do.normSquare().min())
+            else:
+                distObs.append(do.normSquare().elev(elev).cpts)
 
     return np.array(distObs).flatten()
 

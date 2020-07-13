@@ -82,6 +82,10 @@ def _ratBernPolyPt(cpts, wgts, t, t0, tf):
     return num / den
 
 
+def _ratDeCasteljau(cpts, wgts, t0=0., tf=1.):
+    pass
+
+
 @njit(cache=True)
 def _t2tau(t, t0, tf):
     return (t-t0) / (tf-t0)
