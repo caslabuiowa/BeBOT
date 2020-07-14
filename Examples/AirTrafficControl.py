@@ -19,6 +19,28 @@ from optimization.TemporalSeparation import temporalSeparation
 from polynomial.bernstein import Bernstein
 
 
+def setRCParams():
+    # Run this to make sure that the matplotlib plots have the correct font type
+    # for an IEEE publication. Also sets font sizes and line widths for easier
+    # viewing.
+    plt.rcParams.update({
+                'font.size': 40,
+                'pdf.fonttype': 42,
+                'ps.fonttype': 42,
+                'xtick.labelsize': 40,
+                'ytick.labelsize': 40,
+                'lines.linewidth': 4,
+                'lines.markersize': 18,
+                'figure.figsize': [13.333, 10]
+                })
+    # plt.tight_layout()
+
+
+def resetRCParams():
+    # Reset the matplotlib parameters
+    plt.rcParams.update(plt.rcParamsDefault)
+
+
 def initGuess(params):
     """
     Initial guess for the optimizer.
@@ -399,6 +421,8 @@ class Parameters:
 
 
 if __name__ == '__main__':
+    plt.close('all')
+    setRCParams()
     params = Parameters()
 
     # Set everything up for the optimization
@@ -442,4 +466,6 @@ if __name__ == '__main__':
     ax.legend()
 
     plotConstraints(trajs, params)
+
     plt.show()
+    resetRCParams()

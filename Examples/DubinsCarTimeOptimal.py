@@ -379,7 +379,7 @@ class Parameters:
 
         self.inipt = np.array([3, 0])
         self.inispeed = 1
-        self.inipsi = np.pi/2 + 1e-6
+        self.inipsi = np.pi/2 + 1e-6 # Add epsilon so that the tangent plot has real values
 
         self.finalpt = np.array([7, 10])
         self.finalspeed = 1

@@ -6,6 +6,9 @@ Created on Sun Apr 26 13:33:45 2020
 @author: ckielasjensen
 """
 
+import os
+import pickle
+
 import matplotlib.pyplot as plt
 from numba import njit
 import numpy as np
@@ -236,4 +239,10 @@ if __name__ == '__main__':
         vehList.append(temp)
         temp.plot(ax, showCpts=False)
         plt.plot([temp.cpts[0, -1]], [temp.cpts[1, -1]], [temp.cpts[2, -1]],
-                 'k.', markersize=15)
+                 'k.', markersize=15, zorder=10)
+
+    i = 0
+    while os.path.exists('1000_veh_sequential_' + str(i) + '.pickle'):
+        i += 1
+    with open('1000_veh_sequential_' + str(i) + '.pickle', 'wb') as f:
+        pickle.dump(vehList, f)
