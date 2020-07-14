@@ -263,6 +263,11 @@ def cost(x):
         Cost of problem at the current x value.
 
     """
+    # y, tf = reshape(x, params.deg, params.inipt, params.finalpt, params.inispeed,
+    #                    params.finalspeed, params.inipsi, params.finalpsi)
+    # traj = Bernstein(y, t0=0., tf=tf)
+
+    # return tf + traj.diff().diff().normSquare().cpts.sum()**2
     tf = x[-1]
     if tf > 0:
         return tf
