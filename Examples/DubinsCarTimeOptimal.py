@@ -19,6 +19,10 @@ from optimization.ObstacleAvoidance import obstacleAvoidance
 from polynomial.bernstein import Bernstein
 
 
+FIG_DIR = 'Figures/Dubins'
+FIG_FORMAT = 'svg'
+
+
 def setRCParams():
     # Run this to make sure that the matplotlib plots have the correct font type
     # for an IEEE publication. Also sets font sizes and line widths for easier
@@ -232,14 +236,12 @@ def nonlcon(x, params):
                        params.finalspeed, params.inipsi, params.finalpsi)
     traj = Bernstein(y, t0=0., tf=tf)
 
-    maxSpeed = params.vmax**2 - speed(traj) #, elev=params.degElev)
-    angRate = angularRate(traj) #, elev=params.degElev)
+    maxSpeed = params.vmax**2 - speed(traj)
+    angRate = angularRate(traj)
     angRateMax = params.wmax - angRate
     angRateMin = angRate + params.wmax
     separation = obstacleAvoidance([traj], params.obstacles, elev=params.degElev) - params.dsafe**2
 
-    # Note that we are using * here to unwrap speeds and angRates from the
-    # lists that they are in so that concatenate works
     return np.concatenate([maxSpeed, angRateMax, angRateMin, separation])
 
 
@@ -275,7 +277,7 @@ def cost(x):
         return np.inf
 
 
-def plotConstraints(trajs, params):
+def plotConstraints(trajs, params, legNames):
     """
     Plots the constraints of the problem to verify whether they are being met.
 
@@ -291,10 +293,10 @@ def plotConstraints(trajs, params):
     None.
 
     """
-    XLIM = [-1, 9]
+    XLIM = [-1, 11]
     speedFig, speedAx = plt.subplots()
+    tanAngFig, tanAngAx = plt.subplots()
     angRateFig, angRateAx = plt.subplots()
-    distFig, distAx = plt.subplots()
 
     for i, traj in enumerate(trajs):
         xdot = traj.diff().x
@@ -303,42 +305,61 @@ def plotConstraints(trajs, params):
         yddot = ydot.diff()
 
         speed = xdot*xdot + ydot*ydot
-        speed.plot(speedAx, showCpts=False, label=f'Vehicle {i+1}')
+        speed.plot(speedAx, showCpts=False, label=legNames[i])
+
+        tanAng = ydot / xdot
+        tanAng.plot(tanAngAx, showCpts=False, label=legNames[i])
 
         num = yddot*xdot - xddot*ydot
         den = xdot*xdot + ydot*ydot
-        angRate = (num.curve / den.curve).squeeze()**2
-        time = np.linspace(num.t0, num.tf, len(angRate))
-        angRateAx.plot(time, angRate, label=f'Vehicle {i+1}')
+        angRate = num / den
+        angRate.plot(angRateAx, showCpts=False, label=legNames[i])
 
-    for i, traj in enumerate(trajs[:-1]):
-        for j, traj2 in enumerate(trajs[i+1:]):
-            dv = traj - traj2
-            dv.normSquare().plot(distAx, showCpts=False,
-                                 label=f'$||Veh_{i+1} - Veh_{i+2}||^2$')
+    speedAx.plot(XLIM, [params.vmax**2]*2, '--', label=r'$v^2_{max}$')
 
-    speedAx.plot(XLIM, [params.vmin**2]*2, '--', label='$v^2_{min}$')
-    speedAx.plot(XLIM, [params.vmax**2]*2, '--', label='$v^2_{max}$')
-
-    angRateAx.plot(XLIM, [params.wmax**2]*2, '--', label='$\omega^2_{max}$')
-
-    distAx.plot(XLIM, [params.dsafe**2]*2, '--', label='$d^2_{s}$')
+    angRateAx.plot(XLIM, [params.wmax]*2, '--', label=r'$\omega_{max}$')
+    angRateAx.plot(XLIM, [-params.wmax]*2, '--', label=r'$\omega_{min}$')
 
     speedAx.set_xlim(XLIM)
-    speedAx.legend()
-    speedAx.set_xlabel('Time')
-    speedAx.set_ylabel('Squared Speed')
+    speedAx.legend(fontsize=32)
+    speedAx.set_xlabel('Time (s)')
+    speedAx.set_ylabel(r'Squared Speed $\left( \frac{m}{s}^2 \right)$')
     speedAx.set_title('Speed Constraints')
+    tanAngAx.set_xlim(XLIM)
+    tanAngAx.set_ylim([-25, 25])
+    tanAngAx.legend(fontsize=32)
+    tanAngAx.set_xlabel('Time (s)')
+    tanAngAx.set_ylabel(r'$\tan (\psi)$')
+    tanAngAx.set_title('Tangent of Heading Angle')
     angRateAx.set_xlim(XLIM)
-    angRateAx.legend()
-    angRateAx.set_xlabel('Time')
-    angRateAx.set_ylabel('Squared Angular Velocity')
+    angRateAx.set_ylim([-7.5, 3])
+    angRateAx.legend(fontsize=32)
+    angRateAx.set_xlabel('Time (s)')
+    angRateAx.set_ylabel(r'Angular Rate $\left( \frac{rad}{s} \right)$')
     angRateAx.set_title('Angular Velocity Constraints')
-    distAx.set_xlim(XLIM)
-    distAx.legend()
-    distAx.set_xlabel('Time')
-    distAx.set_ylabel('Squared Euclidean Distance')
-    distAx.set_title('Distance Constraints')
+
+
+def saveFigs():
+    import os
+    # Create a Figures directory if it doesn't already exist
+    if not os.path.isdir(FIG_DIR):
+        os.mkdir(FIG_DIR)
+
+    for i in plt.get_fignums():
+        fig = plt.figure(i)
+        ax = fig.get_axes()[0]
+        title = ax.get_title()
+        print(f'Saving figure {i} - {title}')
+
+        ax.set_title('')
+        plt.tight_layout()
+        plt.draw()
+        saveName = os.path.join(FIG_DIR, title.replace(' ', '_') + '.' + FIG_FORMAT)
+        fig.savefig(saveName, format=FIG_FORMAT)
+        ax.set_title(title)
+        plt.draw()
+
+    print('Done saving figures')
 
 
 class Parameters:
@@ -358,11 +379,11 @@ class Parameters:
 
         self.inipt = np.array([3, 0])
         self.inispeed = 1
-        self.inipsi = np.pi/2
+        self.inipsi = np.pi/2 + 1e-6
 
         self.finalpt = np.array([7, 10])
         self.finalspeed = 1
-        self.finalpsi = np.pi/2
+        self.finalpsi = np.pi/2 + 1e-6
 
         self.obstacles = np.array([[3, 2], [6, 7]])
 
@@ -378,7 +399,8 @@ if __name__ == '__main__':
     ub = np.array([300]*2*(params.deg-3) + [np.inf])
     bounds = Bounds(lb, ub)
 
-    legNames = iter(('No Elevation', 'Elevated by 30', 'Elevated by 100', 'Exact Extrema'))
+    legNames = ('No Elevation', 'Elevated by 30', 'Elevated by 100', 'Exact Extrema')
+    legNamesI = iter(legNames)
     fig, ax = plt.subplots()
     trajs = []
     for degElev in [0, 30, 100, np.inf]:
@@ -401,13 +423,14 @@ if __name__ == '__main__':
         trajs.append(Bernstein(y, t0=0., tf=tf))
 
     for traj in trajs:
-        traj.plot(ax, showCpts=False, label=next(legNames))
+        traj.plot(ax, showCpts=False, label=next(legNamesI))
 
     obs1 = plt.Circle(params.obstacles[0], radius=params.dsafe, ec='k', fc='r')
     obs2 = plt.Circle(params.obstacles[1], radius=params.dsafe, ec='k', fc='g')
     ax.add_artist(obs1)
     ax.add_artist(obs2)
 
+    ax.set_title('Dubins Car Time Optimal')
     ax.set_xlim([-0.5, 15.5])
     ax.set_ylim([-0.5, 10.5])
     ax.set_xlabel('X Position (m)')
@@ -415,6 +438,10 @@ if __name__ == '__main__':
     ax.set_aspect('equal')
     ax.legend()
     plt.tight_layout()
+
+    plotConstraints(trajs, params, legNames)
+
+    saveFigs()
 
     plt.show()
     resetRCParams()
