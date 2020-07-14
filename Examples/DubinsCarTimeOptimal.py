@@ -375,7 +375,8 @@ if __name__ == '__main__':
 
     legNames = iter(('No Elevation', 'Elevated by 30', 'Elevated by 100', 'Exact Extrema'))
     fig, ax = plt.subplots()
-    for degElev in [0, 30, 100, 900]:
+    trajs = []
+    for degElev in [0, 30, 100, np.inf]:
         params.degElev = degElev
         cons = [{'type': 'ineq',
                  'fun': lambda x: nonlcon(x, params)}]
@@ -392,10 +393,10 @@ if __name__ == '__main__':
         # Plot everything
         y, tf = reshape(results.x, params.deg, params.inipt, params.finalpt, params.inispeed,
                         params.finalspeed, params.inipsi, params.finalpsi)
-        traj = Bernstein(y, t0=0., tf=tf)
-        traj.plot(ax, showCpts=False, label=next(legNames))
+        trajs.append(Bernstein(y, t0=0., tf=tf))
 
-    ax.legend()
+    for traj in trajs:
+        traj.plot(ax, showCpts=False, label=next(legNames))
 
     obs1 = plt.Circle(params.obstacles[0], radius=params.dsafe, ec='k', fc='r')
     obs2 = plt.Circle(params.obstacles[1], radius=params.dsafe, ec='k', fc='g')
@@ -407,6 +408,8 @@ if __name__ == '__main__':
     ax.set_xlabel('X Position (m)')
     ax.set_ylabel('Y Position (m)')
     ax.set_aspect('equal')
+    ax.legend()
+    plt.tight_layout()
 
     plt.show()
     resetRCParams()

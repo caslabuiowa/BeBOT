@@ -523,7 +523,50 @@ class Bernstein(Base):
 #            print('Maximum number of iterations met')
 #            return None
 
-    def min(self, dim=0, globMin=-np.inf, tol=1e-6):
+    # def min(self, dim=0, globMin=-np.inf, tol=1e-6):
+    #     """Returns the minimum value of the Bernstein polynomialin a single
+    #     dimension
+
+    #     Finds the minimum value of the Bernstein polynomial. This is done by
+    #     first checking the first and last control points since the first and
+    #     last point lie on the curve. If the first or last control point is not
+    #     the minimum value, the curve is split at the lowest control point. The
+    #     new minimum value is then defined as the lowest control point of the
+    #     two new curves. This continues until the difference between the new
+    #     minimum and old minimum values is within the desired tolerance.
+
+    #     :param dim: Which dimension to return the minimum of.
+    #     :type dim: int
+    #     :param tol: Tolerance of the minimum value.
+    #     :type tol: float
+    #     :param maxIter: Maximum number of iterations to search for the minimum.
+    #     :type maxIter: int
+    #     :return: Minimum value of the Bernstein polynomial. None if maximum
+    #         iterations is met.
+    #     :rtype: float or None
+    #     """
+    #     minIdx = np.argmin(self.cpts[dim, :])
+    #     newMin = min(self.cpts[dim, :])
+
+    #     error = np.abs(globMin-newMin)
+
+    #     if error < tol:
+    #         return newMin
+    #     elif minIdx != 0 and minIdx != self.deg:
+    #         splitPoint = minIdx / self.deg
+    #         c1, c2 = self.split(splitPoint)
+    #         try:
+    #             c1min = c1.min(dim=dim, globMin=newMin, tol=tol)
+    #             c2min = c2.min(dim=dim, globMin=newMin, tol=tol)
+    #         except RecursionError as e:
+    #             print('[!] Runtime error in Bernstein.min()')
+    #             print(e)
+    #             return newMin
+
+    #         newMin = min((c1min, c2min))
+
+    #     return newMin
+    def min(self, dim=0, globMin=np.inf, tol=1e-6):
         """Returns the minimum value of the Bernstein polynomialin a single
         dimension
 
@@ -545,27 +588,29 @@ class Bernstein(Base):
             iterations is met.
         :rtype: float or None
         """
-        minIdx = np.argmin(self.cpts[dim, :])
-        newMin = min(self.cpts[dim, :])
+        ub = self.cpts[dim, (0, -1)].min()
+        if ub < globMin:
+            globMin = ub
 
-        error = np.abs(globMin-newMin)
+        minIdx = self.cpts[dim, :].argmin()
+        lb = self.cpts[dim, minIdx]
 
-        if error < tol:
-            return newMin
-        elif minIdx != 0 and minIdx != self.deg:
-            splitPoint = minIdx / self.deg
-            c1, c2 = self.split(splitPoint)
-            try:
-                c1min = c1.min(dim=dim, globMin=newMin, tol=tol)
-                c2min = c2.min(dim=dim, globMin=newMin, tol=tol)
-            except RecursionError as e:
-                print('[!] Runtime error in Bernstein.min()')
-                print(e)
-                return newMin
+        # Prune if the global min is less than the lower bound
+        if globMin < lb:
+            return globMin
 
-            newMin = min((c1min, c2min))
+        # If we are within the desired tolerance, return
+        if ub - lb < tol:
+            return globMin
 
-        return newMin
+        # Otherwise split and continue
+        else:
+            tdiv = (minIdx/self.deg)*(self.tf - self.t0) + self.t0
+            c1, c2 = self.split(tdiv)
+            c1min = c1.min(dim=dim, globMin=globMin, tol=tol)
+            c2min = c2.min(dim=dim, globMin=globMin, tol=tol)
+
+            return min(c1min, c2min)
 
 #    def max4(self, dim=0, tol=1e-6, maxIter=1000):
 #        """Returns the maximum value of the Bezier curve in a single dimension
@@ -623,8 +668,7 @@ class Bernstein(Base):
 #            print('Maximum number of iterations met')
 #            return None
 
-# TODO:
-#   Change error to be absolute not normalized (look @ paper)
+# TODO: fix max os that it behaves like min above
     def max(self, dim=0, globMax=np.inf, tol=1e-6):  # , maxIter=1000):
         """Returns the maximum value of the Bernstein polynomial in a single
         dimension

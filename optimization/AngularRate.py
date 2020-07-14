@@ -29,7 +29,7 @@ def angularRate(bp, elev=DEG_ELEV):
 
     return cpts.squeeze()
 
-    # wgts = den.cpts
+    # wgts = den.elev(elev).cpts
 
     # return RationalBernstein(cpts, wgts, bp.t0, bp.tf)
 
