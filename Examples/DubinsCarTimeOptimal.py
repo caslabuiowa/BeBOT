@@ -323,7 +323,7 @@ def plotConstraints(trajs, params, legNames):
     speedAx.set_xlim(XLIM)
     speedAx.legend(fontsize=32)
     speedAx.set_xlabel('Time (s)')
-    speedAx.set_ylabel(r'Squared Speed $\left( \frac{m}{s}^2 \right)$')
+    speedAx.set_ylabel(r'Squared Speed $\left( \frac{m}{s} \right)^2$')
     speedAx.set_title('Speed Constraints')
     tanAngAx.set_xlim(XLIM)
     tanAngAx.set_ylim([-25, 25])
