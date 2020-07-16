@@ -14,20 +14,20 @@ import matplotlib.pyplot as plt
 from numba import njit
 import numpy as np
 import pandas as pd
-import scipy.optimize as sop
+from scipy.optimize import minimize, Bounds
 
 # import bezier as bez
 from polynomial.bernstein import Bernstein
 
 
-DEG_ELEV = 30
+DEG_ELEV = 10
 
 
 class Parameters:
     """
     """
     def __init__(self):
-        self.deg = 3        # Order of approximation
+        self.deg = 2        # Order of approximation
         self.ndim = 3       # Number of dimensions
         self.dsafe = 0.75      # Minimum safe distance between vehicles (m)
         self.odsafe = 2     # Minimum safe distance from obstacles (m)
@@ -227,12 +227,13 @@ def main():
              'fun': lambda x: nonlinear_constraints(x, params)}]
 
     tstart = time.time()
-    results = sop.minimize(fn, x0,
-                           constraints=cons,
-                           method='SLSQP',
-                           options={'maxiter': 250,
-                                    'disp': True,
-                                    'iprint': 2})
+    results = minimize(fn, x0,
+                       constraints=cons,
+                       bounds=Bounds(-30, 130),
+                       method='SLSQP',
+                       options={'maxiter': 250,
+                                'disp': True,
+                                'iprint': 2})
     tend = time.time()
     print('===============================================================')
     print(f'Total computation time for {params.nveh} vehicles: {tend-tstart}')

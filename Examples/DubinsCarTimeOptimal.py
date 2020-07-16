@@ -421,6 +421,7 @@ if __name__ == '__main__':
         y, tf = reshape(results.x, params.deg, params.inipt, params.finalpt, params.inispeed,
                         params.finalspeed, params.inipsi, params.finalpsi)
         trajs.append(Bernstein(y, t0=0., tf=tf))
+        x0 = results.x
 
     for traj in trajs:
         traj.plot(ax, showCpts=False, label=next(legNamesI))
