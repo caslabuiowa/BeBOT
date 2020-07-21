@@ -235,7 +235,7 @@ def minDist(c1, c2, obs):
 
     ax.plot([pt1[0], pt2[0]], [pt1[1], pt2[1]], 'k-', label='Minimum distance line')
     mid = pt1 + 0.5*(pt2-pt1)
-    ax.text(mid[0], mid[1], f'Minimum Distance: {dist}')
+    ax.text(mid[0]+0.3, mid[1], f'Dist: {dist}')
 
     ax.set_title('Minimum Spatial Distance')
     ax.set_xlabel('X Position (m)')
