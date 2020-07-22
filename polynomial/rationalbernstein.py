@@ -17,6 +17,7 @@ from polynomial.base import Base
 # TODO elevate for rational BP
 # TODO elevate degree if weight of rBP is negative
 # TODO function to normalize rBP to canonical form (w0 = wn = 1)
+# TODO add more functionality into the Base class to avoid rewriting code for both BP and rBPs
 
 
 class RationalBernstein(Base):

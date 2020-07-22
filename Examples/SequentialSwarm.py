@@ -198,7 +198,7 @@ if __name__ == '__main__':
     NDIM = 3        # Number of dimensions
     DEG = 3         # Order of the Bernstein polynomial approximation
     VOLUME = 100    # Length of an edge of the cubic volume being used
-    DSAFE = 1       # Minimum safety distance between vehicles
+    DSAFE = 0.9     # Minimum safety distance between vehicles
     np.random.seed(3)
 
     params = Parameters(NVEH, NDIM, DEG, VOLUME, DSAFE)
