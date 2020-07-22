@@ -11,9 +11,9 @@ import numpy as np
 from constants import DEG_ELEV
 
 
-def temporalSeparation(bpList):
+def temporalSeparation(bpList, elev=DEG_ELEV):
     """
-    Finds the temporal separation between BPs using degree elevation.
+    Find the temporal separation between BPs using degree elevation.
 
     Using the arithmetic and degree elevation properties of Bernstein
     polynomials, this function finds the Euclidean distance between each curve
@@ -44,7 +44,7 @@ def temporalSeparation(bpList):
     for i, traj in enumerate(bpList[:-1]):
         for traj2 in bpList[i+1:]:
             dv = traj - traj2
-            distVeh.append(dv.normSquare().elev(DEG_ELEV).cpts)
+            distVeh.append(dv.normSquare().elev(elev).cpts)
 
     return np.array(distVeh).flatten()
 

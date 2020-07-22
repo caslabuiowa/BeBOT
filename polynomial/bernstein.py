@@ -6,6 +6,11 @@ Created on Tue Mar 24 10:38:09 2020
 @author: ckielasjensen
 """
 
+try:
+    from openGJK_cython import pygjk
+except:
+    print('[!] Warning: OpenGJK library not installed.')
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from numba import jit, njit
@@ -315,7 +320,7 @@ class Bernstein(Base):
         return newCurve
 
     def div(self, denominator):
-        """Divides one Bernstein polynomial by another
+        """Divides one Bernstein polynomial by another.
 
         The division of two Bernstein polynomials results in a rational
         Bernstein polynomial.
@@ -347,11 +352,11 @@ class Bernstein(Base):
         weights = denominator.cpts
 
         return RationalBernstein(cpts.astype(np.float64),
-                              weights.astype(np.float64),
-                              t0=self.t0, tf=self.tf)
+                                 weights.astype(np.float64),
+                                 t0=self.t0, tf=self.tf)
 
     def elev(self, R=1):
-        """Elevates the degree of the Bernstein polynomial
+        """Elevates the degree of the Bernstein polynomial.
 
         Elevates the degree of the Bernstein polynomial by R (default is 1)
         and returns a new, higher degree Bernstein object.
@@ -361,6 +366,9 @@ class Bernstein(Base):
         :return: Elevated Bernstein polynomial
         :rtype: Bernstein
         """
+        if R < 1:
+            return self
+
         try:
             elevMat = Bernstein.elevMatCache[self.deg][R]
         except KeyError:
@@ -515,7 +523,50 @@ class Bernstein(Base):
 #            print('Maximum number of iterations met')
 #            return None
 
-    def min(self, dim=0, globMin=-np.inf, tol=1e-6):
+    # def min(self, dim=0, globMin=-np.inf, tol=1e-6):
+    #     """Returns the minimum value of the Bernstein polynomialin a single
+    #     dimension
+
+    #     Finds the minimum value of the Bernstein polynomial. This is done by
+    #     first checking the first and last control points since the first and
+    #     last point lie on the curve. If the first or last control point is not
+    #     the minimum value, the curve is split at the lowest control point. The
+    #     new minimum value is then defined as the lowest control point of the
+    #     two new curves. This continues until the difference between the new
+    #     minimum and old minimum values is within the desired tolerance.
+
+    #     :param dim: Which dimension to return the minimum of.
+    #     :type dim: int
+    #     :param tol: Tolerance of the minimum value.
+    #     :type tol: float
+    #     :param maxIter: Maximum number of iterations to search for the minimum.
+    #     :type maxIter: int
+    #     :return: Minimum value of the Bernstein polynomial. None if maximum
+    #         iterations is met.
+    #     :rtype: float or None
+    #     """
+    #     minIdx = np.argmin(self.cpts[dim, :])
+    #     newMin = min(self.cpts[dim, :])
+
+    #     error = np.abs(globMin-newMin)
+
+    #     if error < tol:
+    #         return newMin
+    #     elif minIdx != 0 and minIdx != self.deg:
+    #         splitPoint = minIdx / self.deg
+    #         c1, c2 = self.split(splitPoint)
+    #         try:
+    #             c1min = c1.min(dim=dim, globMin=newMin, tol=tol)
+    #             c2min = c2.min(dim=dim, globMin=newMin, tol=tol)
+    #         except RecursionError as e:
+    #             print('[!] Runtime error in Bernstein.min()')
+    #             print(e)
+    #             return newMin
+
+    #         newMin = min((c1min, c2min))
+
+    #     return newMin
+    def min(self, dim=0, globMin=np.inf, tol=1e-6):
         """Returns the minimum value of the Bernstein polynomialin a single
         dimension
 
@@ -537,22 +588,29 @@ class Bernstein(Base):
             iterations is met.
         :rtype: float or None
         """
-        minIdx = np.argmin(self.cpts[dim, :])
-        newMin = min(self.cpts[dim, :])
+        ub = self.cpts[dim, (0, -1)].min()
+        if ub < globMin:
+            globMin = ub
 
-        error = np.abs(globMin-newMin)
+        minIdx = self.cpts[dim, :].argmin()
+        lb = self.cpts[dim, minIdx]
 
-        if error < tol:
-            return newMin
-        elif minIdx != 0 and minIdx != self.deg:
-            splitPoint = minIdx / self.deg
-            c1, c2 = self.split(splitPoint)
-            c1min = c1.min(dim=dim, globMin=newMin, tol=tol)
-            c2min = c2.min(dim=dim, globMin=newMin, tol=tol)
+        # Prune if the global min is less than the lower bound
+        if globMin < lb:
+            return globMin
 
-            newMin = min((c1min, c2min))
+        # If we are within the desired tolerance, return
+        if ub - lb < tol:
+            return globMin
 
-        return newMin
+        # Otherwise split and continue
+        else:
+            tdiv = (minIdx/self.deg)*(self.tf - self.t0) + self.t0
+            c1, c2 = self.split(tdiv)
+            c1min = c1.min(dim=dim, globMin=globMin, tol=tol)
+            c2min = c2.min(dim=dim, globMin=globMin, tol=tol)
+
+            return min(c1min, c2min)
 
 #    def max4(self, dim=0, tol=1e-6, maxIter=1000):
 #        """Returns the maximum value of the Bezier curve in a single dimension
@@ -610,8 +668,7 @@ class Bernstein(Base):
 #            print('Maximum number of iterations met')
 #            return None
 
-# TODO:
-#   Change error to be absolute not normalized (look @ paper)
+# TODO: fix max os that it behaves like min above
     def max(self, dim=0, globMax=np.inf, tol=1e-6):  # , maxIter=1000):
         """Returns the maximum value of the Bernstein polynomial in a single
         dimension
@@ -728,17 +785,42 @@ class Bernstein(Base):
 
     def minDist(self, otherCurve):
         """
+
+
+        Parameters
+        ----------
+        otherCurve : Bernstein
+            Bernstein object of the curve being compared.
+
+        Raises
+        ------
+        ValueError
+            Both curves must be either 2D or 3D only.
+
+        Returns
+        -------
+        (float, float, float)
+            (minimum distance, t1, t2) where t1 and t2 are the t values corresponding to the point at which the
+            minimum distance occurs.
+
         """
-#        if self.dim != 2 or otherCurve.dim != 2:
-#            err = ('Both curves must be 2D only, not {} and {}.'
-#                   ).format(self.dim, otherCurve.dim)
-#            raise ValueError(err)
         if (self.dim < 2 or self.dim > 3 or
                 otherCurve.dim < 2 or otherCurve.dim > 3):
             err = ('Both curves must be either 2D or 3D, not {}D and {}D.'
                    ).format(self.dim, otherCurve.dim)
             raise ValueError(err)
-        return _minDist(self, otherCurve)
+
+        cpts1 = self.cpts.copy()
+        cpts2 = otherCurve.cpts.copy()
+
+        if cpts1.shape[0] < 3:
+            cpts1 = np.concatenate([cpts1, np.zeros((1, cpts1.shape[1]))])
+
+        if cpts2.shape[0] < 3:
+            cpts2 = np.concatenate([cpts2, np.zeros((1, cpts2.shape[1]))])
+
+        alpha, t1, t2 = _minDist(cpts1, cpts2)
+        return alpha, self.t0 + t1*(self.tf-self.t0), otherCurve.t0 + t2*(otherCurve.tf - otherCurve.t0)
 
     def minDist2Poly(self, poly):
         """
@@ -1160,132 +1242,242 @@ def splitCurveMat(deg, z, coefMat=None):
     return Q, Qp
 
 
-def _minDist(c1, c2, cnt=0, alpha=np.inf, eps=1e-9,
-             t1_l=0, t1_h=1, t2_l=0, t2_h=1):
+def _minDist(cpts1, cpts2, count=0, alpha=np.inf, eps=1e-9, t1_l=0., t1_h=1., t2_l=0., t2_h=1.):
     """
-    Source: Computation of the minimum distance between two Bezier
-    curves/surfaces
+    Finds the minimum distance between two Bernstein polynomials given their control points.
+
+    TODO Documentation
+
+    Parameters
+    ----------
+    cpts1 : TYPE
+        DESCRIPTION.
+    cpts2 : TYPE
+        DESCRIPTION.
+    cnt : TYPE, optional
+        DESCRIPTION. The default is 0.
+    alpha : TYPE, optional
+        DESCRIPTION. The default is np.inf.
+    eps : TYPE, optional
+        DESCRIPTION. The default is 1e-9.
+    t1_l : TYPE, optional
+        DESCRIPTION. The default is 0.
+    t1_h : TYPE, optional
+        DESCRIPTION. The default is 1.
+    t2_l : TYPE, optional
+        DESCRIPTION. The default is 0.
+    t2_h : TYPE, optional
+        DESCRIPTION. The default is 1.
+
+    Returns
+    -------
+    alpha : TYPE
+        DESCRIPTION.
+
     """
-    x1 = c1.cpts[0, :]
-    y1 = c1.cpts[1, :]
-    x2 = c2.cpts[0, :]
-    y2 = c2.cpts[1, :]
-
-    if c1.dim == 3:
-        z1 = c1.cpts[2, :]
-    else:
-        z1 = [0]*x1.size
-
-    if c2.dim == 3:
-        z2 = c2.cpts[2, :]
-    else:
-        z2 = [0]*x1.size
-
-    c1 = Bernstein([x1, y1, z1])
-    c2 = Bernstein([x2, y2, z2])
-
-    poly1 = np.array(tuple(zip(x1, y1, z1)))
-    poly2 = np.array(tuple(zip(x2, y2, z2)))
-
-    cnt += 1
-    if cnt > 1000:
-        return (-1, -1, -1)
-
-    flag, info = gjkNew(poly1, poly2)
-    if flag > 0:
-        closest1 = info[0]
-        closest2 = info[1]
-        lb = info[2]
-
-        # Check to see if the closest point on the shape is a control point
-        p1idx = np.where((poly1 == closest1).all(axis=1))[0]
-        p2idx = np.where((poly2 == closest2).all(axis=1))[0]
-        if p1idx.size > 0:
-            t1 = p1idx[0]/c1.deg
-
-        # If the closest point is not a control point, find t by weighting all
-        # the control points by their distance from the closest point
-        else:
-            eucDist1 = np.linalg.norm(closest1-c1.cpts.T, axis=1)
-            N = eucDist1.size
-            W = np.empty(N)
-            for i in range(N):
-                W[i] = 1 / (1 +
-                            (eucDist1[i]/eucDist1[:i]).sum() +
-                            (eucDist1[i]/eucDist1[i+1:]).sum())
-
-            t1 = (W*range(N)/N).sum()
-
-        if p2idx.size > 0:
-            t2 = p2idx[0]/c2.deg
-
-        else:
-            eucDist2 = np.linalg.norm(closest2-c2.cpts.T, axis=1)
-            N = eucDist2.size
-            W = np.empty(N)
-            for i in range(N):
-                W[i] = 1 / (1 +
-                            (eucDist2[i]/eucDist2[:i]).sum() +
-                            (eucDist2[i]/eucDist2[i+1:]).sum())
-
-            t2 = (W*range(N)/N).sum()
-
-    else:
-        t1 = 0.5
-        t2 = 0.5
-        lb = eps
-
     t1len = t1_h - t1_l
     t2len = t2_h - t2_l
 
-    ub, t1local, t2local = _upperbound(c1.cpts, c2.cpts)
+    lb = pygjk(cpts1.T, cpts2.T)
+    if lb > alpha:
+        return np.inf, -1, -1
 
-    if ub <= alpha:
+    ub, t1, t2 = _upperbound(cpts1, cpts2)
+    tdiv1 = t1_l + t1len*t1
+    tdiv2 = t2_l + t2len*t2
+
+    if ub < alpha:
         alpha = ub
-        newT1 = (1-t1local)*t1_l + t1local*t1_h
-        newT2 = (1-t2local)*t2_l + t2local*t2_h
-    else:
-        newT1 = -1
-        newT2 = -1
 
-    retval = (alpha, newT1, newT2)
-
-    if lb >= alpha*(1-eps):
-        return retval
+    if alpha - lb < eps:
+        return alpha, tdiv1, tdiv2
 
     else:
-        c3, c4 = c1.split(t1)
-        c5, c6 = c2.split(t2)
+        c1L = []
+        c1R = []
+        for row in cpts1:
+            left, right = deCasteljauSplit(row, 0.5)
+            c1L.append(left)
+            c1R.append(right[::-1])
+        c1L = np.array(c1L, dtype=float)
+        c1R = np.array(c1R, dtype=float)
 
-        newAlpha, newT1, newT2 = _minDist(c3, c5, cnt=cnt, alpha=retval[0],
-                                          t1_l=t1_l, t1_h=t1_l+t1*t1len,
-                                          t2_l=t2_l, t2_h=t2_l+t2*t2len)
+        c2L = []
+        c2R = []
+        for row in cpts2:
+            left, right = deCasteljauSplit(row, 0.5)
+            c2L.append(left)
+            c2R.append(right[::-1])
+        c2L = np.array(c2L, dtype=float)
+        c2R = np.array(c2R, dtype=float)
 
-        if newAlpha < retval[0]:
-            retval = (newAlpha, newT1, newT2)
+        # c1L, c1R = deCasteljauSplit(cpts1, 0.5)
+        # c1R = c1R[::-1]
+        # c2L, c2R = deCasteljauSplit(cpts2, 0.5)
+        # c2R = c2R[::-1]
 
-        newAlpha, newT1, newT2 = _minDist(c3, c6, cnt=cnt, alpha=retval[0],
-                                          t1_l=t1_l, t1_h=t1_l+t1*t1len,
-                                          t2_l=t2_l+t2*t2len, t2_h=t2_h)
+        count += 1
+        alphaNew, t1New, t2New = _minDist(c1L, c2L, count=count, alpha=alpha,
+                                          t1_l=t1_l, t1_h=t1_l+0.5*t1len,
+                                          t2_l=t2_l, t2_h=t2_l+0.5*t2len)
+        if alphaNew < alpha:
+            alpha = alphaNew
+            tdiv1 = t1New
+            tdiv2 = t2New
 
-        if newAlpha < retval[0]:
-            retval = (newAlpha, newT1, newT2)
+        alphaNew, t1New, t2New = _minDist(c1L, c2R, count=count, alpha=alpha,
+                                          t1_l=t1_l, t1_h=t1_l+0.5*t1len,
+                                          t2_l=t2_l+0.5*t2len, t2_h=t2_h)
+        if alphaNew < alpha:
+            alpha = alphaNew
+            tdiv1 = t1New
+            tdiv2 = t2New
 
-        newAlpha, newT1, newT2 = _minDist(c4, c5, cnt=cnt, alpha=retval[0],
-                                          t1_l=t1_l+t1*t1len, t1_h=t1_h,
-                                          t2_l=t2_l, t2_h=t2_l+t2*t2len)
+        alphaNew, t1New, t2New = _minDist(c1R, c2L, count=count, alpha=alpha,
+                                          t1_l=t1_l+0.5*t1len, t1_h=t1_h,
+                                          t2_l=t2_l, t2_h=t2_l+0.5*t2len)
+        if alphaNew < alpha:
+            alpha = alphaNew
+            tdiv1 = t1New
+            tdiv2 = t2New
 
-        if newAlpha < retval[0]:
-            retval = (newAlpha, newT1, newT2)
+        alphaNew, t1New, t2New = _minDist(c1R, c2R, count=count, alpha=alpha,
+                                          t1_l=t1_l+0.5*t1len, t1_h=t1_h,
+                                          t2_l=t2_l+0.5*t2len, t2_h=t2_h)
+        if alphaNew < alpha:
+            alpha = alphaNew
+            tdiv1 = t1New
+            tdiv2 = t2New
 
-        newAlpha, newT1, newT2 = _minDist(c4, c6, cnt=cnt, alpha=retval[0],
-                                          t1_l=t1_l+t1*t1len, t1_h=t1_h,
-                                          t2_l=t2_l+t2*t2len, t2_h=t2_h)
+        return alpha, tdiv1, tdiv2
 
-        if newAlpha < retval[0]:
-            retval = (newAlpha, newT1, newT2)
 
-    return retval
+# def _minDist(c1, c2, cnt=0, alpha=np.inf, eps=1e-9,
+#              t1_l=0, t1_h=1, t2_l=0, t2_h=1):
+#     """
+#     Source: Computation of the minimum distance between two Bezier
+#     curves/surfaces
+#     """
+#     x1 = c1.cpts[0, :]
+#     y1 = c1.cpts[1, :]
+#     x2 = c2.cpts[0, :]
+#     y2 = c2.cpts[1, :]
+
+#     if c1.dim == 3:
+#         z1 = c1.cpts[2, :]
+#     else:
+#         z1 = [0]*x1.size
+
+#     if c2.dim == 3:
+#         z2 = c2.cpts[2, :]
+#     else:
+#         z2 = [0]*x1.size
+
+#     c1 = Bernstein([x1, y1, z1])
+#     c2 = Bernstein([x2, y2, z2])
+
+#     poly1 = np.array(tuple(zip(x1, y1, z1)))
+#     poly2 = np.array(tuple(zip(x2, y2, z2)))
+
+#     cnt += 1
+#     if cnt > 1000:
+#         return (-1, -1, -1)
+
+#     flag, info = gjkNew(poly1, poly2)
+#     if flag > 0:
+#         closest1 = info[0]
+#         closest2 = info[1]
+#         lb = info[2]
+
+#         # Check to see if the closest point on the shape is a control point
+#         p1idx = np.where((poly1 == closest1).all(axis=1))[0]
+#         p2idx = np.where((poly2 == closest2).all(axis=1))[0]
+#         if p1idx.size > 0:
+#             t1 = p1idx[0]/c1.deg
+
+#         # If the closest point is not a control point, find t by weighting all
+#         # the control points by their distance from the closest point
+#         else:
+#             eucDist1 = np.linalg.norm(closest1-c1.cpts.T, axis=1)
+#             N = eucDist1.size
+#             W = np.empty(N)
+#             for i in range(N):
+#                 W[i] = 1 / (1 +
+#                             (eucDist1[i]/eucDist1[:i]).sum() +
+#                             (eucDist1[i]/eucDist1[i+1:]).sum())
+
+#             t1 = (W*range(N)/N).sum()
+
+#         if p2idx.size > 0:
+#             t2 = p2idx[0]/c2.deg
+
+#         else:
+#             eucDist2 = np.linalg.norm(closest2-c2.cpts.T, axis=1)
+#             N = eucDist2.size
+#             W = np.empty(N)
+#             for i in range(N):
+#                 W[i] = 1 / (1 +
+#                             (eucDist2[i]/eucDist2[:i]).sum() +
+#                             (eucDist2[i]/eucDist2[i+1:]).sum())
+
+#             t2 = (W*range(N)/N).sum()
+
+#     else:
+#         t1 = 0.5
+#         t2 = 0.5
+#         lb = eps
+
+#     t1len = t1_h - t1_l
+#     t2len = t2_h - t2_l
+
+#     ub, t1local, t2local = _upperbound(c1.cpts, c2.cpts)
+
+#     if ub <= alpha:
+#         alpha = ub
+#         newT1 = (1-t1local)*t1_l + t1local*t1_h
+#         newT2 = (1-t2local)*t2_l + t2local*t2_h
+#     else:
+#         newT1 = -1
+#         newT2 = -1
+
+#     retval = (alpha, newT1, newT2)
+
+#     if lb >= alpha*(1-eps):
+#         return retval
+
+#     else:
+#         c3, c4 = c1.split(t1)
+#         c5, c6 = c2.split(t2)
+
+#         newAlpha, newT1, newT2 = _minDist(c3, c5, cnt=cnt, alpha=retval[0],
+#                                           t1_l=t1_l, t1_h=t1_l+t1*t1len,
+#                                           t2_l=t2_l, t2_h=t2_l+t2*t2len)
+
+#         if newAlpha < retval[0]:
+#             retval = (newAlpha, newT1, newT2)
+
+#         newAlpha, newT1, newT2 = _minDist(c3, c6, cnt=cnt, alpha=retval[0],
+#                                           t1_l=t1_l, t1_h=t1_l+t1*t1len,
+#                                           t2_l=t2_l+t2*t2len, t2_h=t2_h)
+
+#         if newAlpha < retval[0]:
+#             retval = (newAlpha, newT1, newT2)
+
+#         newAlpha, newT1, newT2 = _minDist(c4, c5, cnt=cnt, alpha=retval[0],
+#                                           t1_l=t1_l+t1*t1len, t1_h=t1_h,
+#                                           t2_l=t2_l, t2_h=t2_l+t2*t2len)
+
+#         if newAlpha < retval[0]:
+#             retval = (newAlpha, newT1, newT2)
+
+#         newAlpha, newT1, newT2 = _minDist(c4, c6, cnt=cnt, alpha=retval[0],
+#                                           t1_l=t1_l+t1*t1len, t1_h=t1_h,
+#                                           t2_l=t2_l+t2*t2len, t2_h=t2_h)
+
+#         if newAlpha < retval[0]:
+#             retval = (newAlpha, newT1, newT2)
+
+#     return retval
 
 
 def _minDist2Poly(c1, poly2, cnt=0, alpha=np.inf, eps=1e-6, t1_l=0, t1_h=1):
@@ -1379,6 +1571,24 @@ def _minDist2Poly(c1, poly2, cnt=0, alpha=np.inf, eps=1e-6, t1_l=0, t1_h=1):
 @njit(cache=True)
 def _upperbound(c1, c2):
     """
+    Finds the upper bound on the minimum distance between two Bernstein polynomials.
+
+    Parameters
+    ----------
+    c1 : np.array
+        Control points of the first Bernstein polynomial.
+    c2 : np.array
+        Control points of the second Bernstein polynomial.
+
+    Returns
+    -------
+    minimum distance : float
+        Upper bound on the minimum distance.
+    t1 : float
+        t value at which the minimum distance occurs on the first Bernstein polynomial.
+    t2 : float
+        t value at which the minimum distance occurs on the second Bernstein polynomial.
+
     """
     distances = np.empty(4)
     tvals = np.array([(0., 0.),
@@ -1634,3 +1844,37 @@ def _normSquare(x, Nveh, Ndim, prodM):
             S[i, Ndim*i+j] = 1
 
     return np.dot(S, xsquare)
+
+
+if __name__ == '__main__':
+    plt.close('all')
+    cpts1 = np.array([[0, 2, 4, 6, 8, 10],
+                      [1, 0, 2, 3, 10, 3],
+                      [0, 0, 0, 0, 0, 0]], dtype=float)
+    cpts2 = np.array([[1, 3, 6, 8, 10, 12],
+                      [6, 9, 10, 11, 8, 8],
+                      [0, 0, 0, 0, 0, 0]], dtype=float)
+
+    # Bernstein polynomials
+    c1 = Bernstein(cpts1, t0=10, tf=20)
+    c2 = Bernstein(cpts2, t0=10, tf=20)
+
+    alpha, t1, t2 = _minDist(cpts1, cpts2)
+
+    approxMin = np.inf
+    approxT1 = 0
+    approxT2 = 0
+    for i, val in enumerate(c1.curve.T):
+        for j, val2 in enumerate(c2.curve[:, i:].T):
+            dist = np.linalg.norm(val - val2)
+            if dist < approxMin:
+                approxMin = dist
+                approxT1 = i / 1001
+                approxT2 = i+j / 1001
+
+    print(f'Alpha: {alpha}, t1: {t1}, t2: {t2}')
+    print(f'Approx: {approxMin}, t1: {approxT1}, t2: {approxT2}')
+
+    ax = c1.plot()
+    c2.plot(ax)
+    plt.show()

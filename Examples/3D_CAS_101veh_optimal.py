@@ -14,23 +14,21 @@ import matplotlib.pyplot as plt
 from numba import njit
 import numpy as np
 import pandas as pd
-import scipy.optimize as sop
+from scipy.optimize import minimize, Bounds
 
 # import bezier as bez
 from polynomial.bernstein import Bernstein
-
-
-DEG_ELEV = 30
+from constants import DEG_ELEV
 
 
 class Parameters:
     """
     """
     def __init__(self):
-        self.deg = 3        # Order of approximation
-        self.ndim = 3       # Number of dimensions
-        self.dsafe = 0.75      # Minimum safe distance between vehicles (m)
-        self.odsafe = 2     # Minimum safe distance from obstacles (m)
+        self.deg = 2            # Order of approximation
+        self.ndim = 3           # Number of dimensions
+        self.dsafe = 0.75       # Minimum safe distance between vehicles (m)
+        self.odsafe = 2         # Minimum safe distance from obstacles (m)
 
         self.obsLoc = np.array([(13, 10),
                                 (18, 18),
@@ -40,8 +38,7 @@ class Parameters:
         df = pd.read_csv('CAS_PixelImage.csv')
         nveh = df.shape[0]
         self.nveh = nveh
-        self.finalPts = np.concatenate((df.values, 100*np.ones((nveh, 1))),
-                                       axis=1)
+        self.finalPts = np.concatenate((df.values, 100*np.ones((nveh, 1))), axis=1)
         self.finalPts = np.ascontiguousarray(self.finalPts)
 
         # Initial points
@@ -52,8 +49,7 @@ class Parameters:
         pts = np.concatenate((x, y), axis=1)
         idxs = np.random.choice(np.arange(len(pts)), size=nveh, replace=False)
 
-        self.iniPts = np.concatenate([pts[idxs, :], np.zeros((nveh, 1))],
-                                     axis=1)
+        self.iniPts = np.concatenate([pts[idxs, :], np.zeros((nveh, 1))], axis=1)
 
 
 def init_guess(params):
@@ -118,9 +114,12 @@ def build_traj_list(y, params):
 def cost(x, params):
     """
     """
-    # return 0
     y = reshape(x, params.nveh, params.deg, params.iniPts, params.finalPts)
-    return _euclideanObjective(y, params.nveh, params.ndim)
+    trajs = build_traj_list(y, params)
+
+    return sum(sum([traj.diff().diff().normSquare().cpts.squeeze() for traj in trajs]))
+
+    # return _euclideanObjective(y, params.nveh, params.ndim)
     # return np.linalg.norm(np.diff(y))
 
 @njit(cache=True)
@@ -227,12 +226,13 @@ def main():
              'fun': lambda x: nonlinear_constraints(x, params)}]
 
     tstart = time.time()
-    results = sop.minimize(fn, x0,
-                           constraints=cons,
-                           method='SLSQP',
-                           options={'maxiter': 250,
-                                    'disp': True,
-                                    'iprint': 2})
+    results = minimize(fn, x0,
+                       constraints=cons,
+                       bounds=Bounds(-30, 130),
+                       method='SLSQP',
+                       options={'maxiter': 250,
+                                'disp': True,
+                                'iprint': 2})
     tend = time.time()
     print('===============================================================')
     print(f'Total computation time for {params.nveh} vehicles: {tend-tstart}')

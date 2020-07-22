@@ -13,7 +13,7 @@ import pandas as pd
 import scipy.optimize as sop
 import time
 
-import bezier as bez
+from polynomial.bernstein import Bernstein
 
 DEG_ELEV = 30
 
@@ -58,10 +58,10 @@ def temporalSeparationConstraints(y, nveh, ndim, maxSep):
     """
     if nveh > 1:
         distVeh = np.empty(nveh-1)
-        vehTraj = bez.Bezier(y[0:ndim, :])
+        vehTraj = Bernstein(y[0:ndim, :])
 
         for i in range(1, nveh):
-            tempTraj = bez.Bezier(y[i*ndim:(i+1)*ndim, :])
+            tempTraj = Bernstein(y[i*ndim:(i+1)*ndim, :])
             dv = vehTraj - tempTraj
             distVeh[i-1] = dv.normSquare().elev(DEG_ELEV).cpts.min()
 
@@ -207,13 +207,13 @@ if __name__ == '__main__':
     print(f'Total computation time for {NVEH} vehicles: {tend-tstart}')
     print('===============================================================')
 
-    temp = bez.Bezier(traj[0:NDIM, :])
+    temp = Bernstein(traj[0:NDIM, :])
     vehList = [temp]
     ax = temp.plot(showCpts=False)
     plt.plot([temp.cpts[0, -1]], [temp.cpts[1, -1]], [temp.cpts[2, -1]],
              'k.', markersize=15, zorder=-1)
     for i in range(NVEH):
-        temp = bez.Bezier(traj[i*NDIM:(i+1)*NDIM, :])
+        temp = Bernstein(traj[i*NDIM:(i+1)*NDIM, :])
         vehList.append(temp)
         temp.plot(ax, showCpts=False)
         plt.plot([temp.cpts[0, -1]], [temp.cpts[1, -1]], [temp.cpts[2, -1]],

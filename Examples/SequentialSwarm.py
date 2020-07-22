@@ -6,6 +6,9 @@ Created on Sun Apr 26 13:33:45 2020
 @author: ckielasjensen
 """
 
+import os
+import pickle
+
 import matplotlib.pyplot as plt
 from numba import njit
 import numpy as np
@@ -13,7 +16,9 @@ import pandas as pd
 from scipy.optimize import minimize, Bounds
 import time
 
+from constants import DEG_ELEV
 from polynomial.bernstein import Bernstein
+
 
 def nonlcon(x, vidx, traj, nveh, params):
     """Nonlinear constraints of the optimization problem
@@ -58,7 +63,8 @@ def temporalSeparationConstraints(y, nveh, ndim, maxSep):
     :rtype: np.ndarray
     """
     if nveh > 1:
-        distVeh = np.empty(nveh-1)
+        # distVeh = np.empty(nveh-1)
+        distVeh = []
         # vehTraj = bez.Bezier(y[0:ndim, :])
         vehTraj = Bernstein(y[0:ndim, :])
 
@@ -66,9 +72,10 @@ def temporalSeparationConstraints(y, nveh, ndim, maxSep):
             # tempTraj = bez.Bezier(y[i*ndim:(i+1)*ndim, :])
             tempTraj = Bernstein(y[i*ndim:(i+1)*ndim, :])
             dv = vehTraj - tempTraj
-            distVeh[i-1] = dv.normSquare().elev(10).cpts.min()
+            # distVeh[i-1] = dv.normSquare().elev(DEG_ELEV).cpts.min()
+            distVeh.append(dv.normSquare().elev(DEG_ELEV).cpts.squeeze())
 
-        return (distVeh - maxSep**2)
+        return (np.concatenate(distVeh) - maxSep**2)
 
     else:
         return np.atleast_1d(0.0)
@@ -77,10 +84,14 @@ def temporalSeparationConstraints(y, nveh, ndim, maxSep):
 def cost(x, vidx, params):
     """Cost function of the optimization problem
     """
-    return 0
-#    y = reshape(x, np.atleast_2d([]), params.ndim, params.inipts[vidx, :],
-#                params.finalpts[vidx, :])
-#    return np.linalg.norm(np.diff(y))
+    # return 0
+    y = reshape(x, np.atleast_2d([]), params.ndim, params.inipts[vidx, :],
+                params.finalpts[vidx, :])
+    # return np.linalg.norm(np.diff(y))
+    accel = Bernstein(y, t0=params.t0, tf=params.tf).diff().diff().normSquare()
+
+    return accel.cpts.sum()
+
 
 
 @njit(cache=True)
@@ -157,12 +168,14 @@ class Parameters:
     :param dsafe: Minimum safe distance between vehicles
     :type dsafe: float
     """
-    def __init__(self, nveh, ndim, deg, volume, dsafe):
+    def __init__(self, nveh, ndim, deg, volume, dsafe, t0=0, tf=30):
         self.nveh = nveh
         self.ndim = ndim
         self.deg = deg
         self.volume = volume
         self.dsafe = float(dsafe)
+        self.t0 = t0
+        self.tf = tf
 
         # Generate initial and final points randomly within the control volume
         self.inipts = volume*np.concatenate([
@@ -181,16 +194,16 @@ class Parameters:
 
 
 if __name__ == '__main__':
-    NVEH = 100      # Number of vehicles (up to 1000 for this example)
+    NVEH = 1000     # Number of vehicles (up to 1000 for this example)
     NDIM = 3        # Number of dimensions
     DEG = 3         # Order of the Bernstein polynomial approximation
     VOLUME = 100    # Length of an edge of the cubic volume being used
-    DSAFE = 1       # Minimum safety distance between vehicles
+    DSAFE = 0.9     # Minimum safety distance between vehicles
     np.random.seed(3)
 
     params = Parameters(NVEH, NDIM, DEG, VOLUME, DSAFE)
     traj = np.atleast_2d([])
-    bounds = Bounds(0, VOLUME*2)
+    bounds = Bounds(-VOLUME, VOLUME*2)
 
     tstart = time.time()
     for i in range(NVEH):
@@ -226,4 +239,10 @@ if __name__ == '__main__':
         vehList.append(temp)
         temp.plot(ax, showCpts=False)
         plt.plot([temp.cpts[0, -1]], [temp.cpts[1, -1]], [temp.cpts[2, -1]],
-                 'k.', markersize=15)
+                 'k.', markersize=15, zorder=10)
+
+    i = 0
+    while os.path.exists('1000_veh_sequential_' + str(i) + '.pickle'):
+        i += 1
+    with open('1000_veh_sequential_' + str(i) + '.pickle', 'wb') as f:
+        pickle.dump(vehList, f)

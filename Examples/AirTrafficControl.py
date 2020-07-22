@@ -17,6 +17,30 @@ from optimization.AngularRate import angularRate
 from optimization.Speed import speed
 from optimization.TemporalSeparation import temporalSeparation
 from polynomial.bernstein import Bernstein
+from utils import saveFigs
+
+
+def setRCParams():
+    # Run this to make sure that the matplotlib plots have the correct font type
+    # for an IEEE publication. Also sets font sizes and line widths for easier
+    # viewing.
+    plt.rcParams.update({
+                'font.size': 24,
+                'figure.titlesize': 40,
+                'pdf.fonttype': 42,
+                'ps.fonttype': 42,
+                # 'xtick.labelsize': 40,
+                # 'ytick.labelsize': 40,
+                'lines.linewidth': 4,
+                'lines.markersize': 18,
+                'figure.figsize': [13.333, 10]
+                })
+    # plt.tight_layout()
+
+
+def resetRCParams():
+    # Reset the matplotlib parameters
+    plt.rcParams.update(plt.rcParamsDefault)
 
 
 def initGuess(params):
@@ -184,12 +208,15 @@ def nonlcon(x, params):
     speeds = [speed(traj) for traj in trajs]
     minSpeeds = [vel - params.vmin**2 for vel in speeds]
     maxSpeeds = [params.vmax**2 - vel for vel in speeds]
-    angRates = [params.wmax**2 - angularRate(traj) for traj in trajs]
+    # angRates = [params.wmax**2 - angularRate(traj) for traj in trajs]
+    angRates = [angularRate(traj) for traj in trajs]
+    angRateMax = [params.wmax - angRate for angRate in angRates]
+    angRateMin = [angRate + params.wmax for angRate in angRates]
     separation = temporalSeparation(trajs) - params.dsafe**2
 
     # Note that we are using * here to unwrap speeds and angRates from the
     # lists that they are in so that concatenate works
-    return np.concatenate([*minSpeeds, *maxSpeeds, *angRates, separation])
+    return np.concatenate([*minSpeeds, *maxSpeeds, *angRateMax, *angRateMin, separation])
 
 
 def buildTrajList(y, nveh, times):
@@ -260,53 +287,58 @@ def plotConstraints(trajs, params):
     None.
 
     """
-    XLIM = [-1, 9]
+    XLIM = [-1, max([traj.tf for traj in trajs])/(60*60)]
     speedFig, speedAx = plt.subplots()
     angRateFig, angRateAx = plt.subplots()
     distFig, distAx = plt.subplots()
 
     for i, traj in enumerate(trajs):
+        time = np.linspace(traj.t0, traj.tf, traj.curve.shape[1])/(60*60)
         xdot = traj.diff().x
         ydot = traj.diff().y
         xddot = xdot.diff()
         yddot = ydot.diff()
 
         speed = xdot*xdot + ydot*ydot
-        speed.plot(speedAx, showCpts=False, label=f'Vehicle {i+1}')
+        # speed.plot(speedAx, showCpts=False, label=f'Vehicle {i+1}')
+        speedAx.plot(time, speed.curve.squeeze(), label=f'Vehicle {i+1}')
 
         num = yddot*xdot - xddot*ydot
         den = xdot*xdot + ydot*ydot
         angRate = (num.curve / den.curve).squeeze()**2
-        time = np.linspace(num.t0, num.tf, len(angRate))
+        # time = np.linspace(num.t0, num.tf, len(angRate))/(60*60)
         angRateAx.plot(time, angRate, label=f'Vehicle {i+1}')
 
     for i, traj in enumerate(trajs[:-1]):
         for j, traj2 in enumerate(trajs[i+1:]):
             dv = traj - traj2
-            dv.normSquare().plot(distAx, showCpts=False,
-                                 label=f'$||Veh_{i+1} - Veh_{i+2}||^2$')
+            # dv.normSquare().plot(distAx, showCpts=False, label=f'$||Veh_{i+1} - Veh_{j+1}||^2$')
+            time = np.linspace(dv.t0, dv.tf, dv.curve.shape[1])/(60*60)
+            curve = dv.normSquare().curve.squeeze()
+            distAx.plot(time, curve/(1000*1000), label=f'$||Veh_{i+1} - Veh_{i+2}||^2$')
 
-    speedAx.plot(XLIM, [params.vmin**2]*2, '--', label='$v^2_{min}$')
-    speedAx.plot(XLIM, [params.vmax**2]*2, '--', label='$v^2_{max}$')
+    speedAx.plot(XLIM, [params.vmin**2]*2, 'r--', label=r'$v^2_{min}$')
+    speedAx.plot(XLIM, [params.vmax**2]*2, 'r--', label=r'$v^2_{max}$')
 
-    angRateAx.plot(XLIM, [params.wmax**2]*2, '--', label='$\omega^2_{max}$')
+    angRateAx.plot(XLIM, [params.wmax]*2, 'r--', label=r'$\omega^2_{max}$')
+    angRateAx.plot(XLIM, [-params.wmax]*2, 'r--', label=r'$\omega^2_{min}$')
 
-    distAx.plot(XLIM, [params.dsafe**2]*2, '--', label='$d^2_{s}$')
+    distAx.plot(XLIM, [params.dsafe**2/(1000*1000)]*2, '--', label=r'$d^2_{s}$')
 
-    speedAx.set_xlim(XLIM)
+    # speedAx.set_xlim(XLIM)
     speedAx.legend()
-    speedAx.set_xlabel('Time')
-    speedAx.set_ylabel('Squared Speed')
+    speedAx.set_xlabel('Time (hr)')
+    speedAx.set_ylabel(r'Squared Speed $\left(\frac{m}{s}\right)^2$')
     speedAx.set_title('Speed Constraints')
-    angRateAx.set_xlim(XLIM)
+    # angRateAx.set_xlim(XLIM)
     angRateAx.legend()
-    angRateAx.set_xlabel('Time')
-    angRateAx.set_ylabel('Squared Angular Velocity')
+    angRateAx.set_xlabel('Time (hr)')
+    angRateAx.set_ylabel(r'Angular Velocity $\left( \frac{rad}{s} \right)$')
     angRateAx.set_title('Angular Velocity Constraints')
-    distAx.set_xlim(XLIM)
+    # distAx.set_xlim(XLIM)
     distAx.legend()
-    distAx.set_xlabel('Time')
-    distAx.set_ylabel('Squared Euclidean Distance')
+    distAx.set_xlabel('Time (hr)')
+    distAx.set_ylabel(r'Squared Euclidean Distance $km^2$')
     distAx.set_title('Distance Constraints')
 
 
@@ -363,42 +395,48 @@ class Parameters:
 
         Returns
         -------
-        None.
+        None
 
         """
-        self.nveh = 4   # Number of vehicles
-        self.deg = 5    # Degree of Bernstein polynomials being used
-        self.dsafe = 1  # Minimum safe distance between vehicles
-        self.vmin = 1   # Minimum speed
-        self.vmax = 7  # Maximum speed
-        self.wmax = np.pi/2 # Maximum angular rate
+        self.nveh = 4           # Number of vehicles
+        self.deg = 5            # Degree of Bernstein polynomials being used
+        self.dsafe = 5000       # Minimum safe distance between vehicles (m)
+        self.vmin = 200         # Minimum speed (m/s)
+        self.vmax = 260         # Maximum speed (m/s)
+        self.wmax = 0.05236     # Maximum angular rate (rad/s)
 
         # Initial points
-        self.inipts = np.array([
+        inipts = np.array([
             [-117.1611, 32.7157],   # San Diego
             [-74.006, 40.7128],     # New York
             [-93.2650, 44.9778],    # Minneapolis
             [-122.3321, 47.6062]    # Seattle
             ])
+        # Convert initial points from lat/lon to Google's Mercator projection
+        self.inipts = crs.GOOGLE_MERCATOR.transform_points(crs.Geodetic(), *inipts.T)[:, :-1]
         # Initial speeds
-        self.inispeeds = np.array([3, 3, 3, 3])
+        self.inispeeds = self.vmin*np.ones(4) + 5
         # Initial heading angles
         self.inipsis = np.array([0, np.pi, 0, 0])
 
         # Final points
-        self.finalpts = np.array([
+        finalpts = np.array([
             [-93.2650, 44.9778],    # Minneapolis
             [-122.3321, 47.6062],   # Seattle
             [-80.1918, 25.7617],    # Miami
             [-104.9903, 39.7392]    # Denver
         ])
+        # Convert final points from lat/lon to Goggle's Mercator projection
+        self.finalpts = crs.GOOGLE_MERCATOR.transform_points(crs.Geodetic(), *finalpts.T)[:, :-1]
         # Final speeds
-        self.finalspeeds = np.array([3, 3, 3, 3])
+        self.finalspeeds = self.vmin*np.ones(4) + 5
         # Final heading angles
         self.finalpsis = np.array([0, np.pi, -np.pi/2, 0])
 
 
 if __name__ == '__main__':
+    plt.close('all')
+    setRCParams()
     params = Parameters()
 
     # Set everything up for the optimization
@@ -406,17 +444,20 @@ if __name__ == '__main__':
     def fn(x): return cost(x, params.nveh)
     cons = [{'type': 'ineq',
              'fun': lambda x: nonlcon(x, params)}]
-    lb = np.array([-300]*2*params.nveh*(params.deg-3) + params.nveh*[0.001])
-    ub = np.array([300]*2*params.nveh*(params.deg-3) + params.nveh*[np.inf])
+    lb = np.array([-np.inf]*2*params.nveh*(params.deg-3) + params.nveh*[0.001])
+    ub = np.array([np.inf]*2*params.nveh*(params.deg-3) + params.nveh*[np.inf])
     bounds = Bounds(lb, ub)
 
     # Call the optimizer
+    # Since the cost function is optimizing final time (in seconds), we set the 'ftol' option to 60 since an extra
+    # minute on 3+ hour flight won't really matter all that much (the default value is 1e-6)
     results = minimize(fn, x0,
                        constraints=cons,
                        bounds=bounds,
                        method='SLSQP',
-                       options={'maxiter': 250,
+                       options={'maxiter': 300,
                                 'disp': True,
+                                'ftol': 60,
                                 'iprint': 2})
 
     # Plot everything
@@ -426,7 +467,7 @@ if __name__ == '__main__':
 
     trajs = buildTrajList(y, params.nveh, times)
 
-    plt.close('all')
+    # plt.close('all')
     cities = [
         [-117.1611, 32.7157],   # San Diego
         [-74.006, 40.7128],     # New York
@@ -437,9 +478,15 @@ if __name__ == '__main__':
         ]
     ax = drawUS(cities)
     for i, traj in enumerate(trajs):
-        ax.plot(traj.curve[0], traj.curve[1], transform=crs.PlateCarree(),
-                label=f'Vehicle {i+1}')
+        # Not plotting the last point due to a bug in matplotlib/cartopy
+        ax.plot(traj.curve[0, :-1], traj.curve[1, :-1], label=f'Vehicle {i+1}', transform=crs.GOOGLE_MERCATOR)
     ax.legend()
+    ax.set_title('Flight Trajectories')
+    # ax.name = 'cartopy'  # Needed due to a bug in matplotlib/cartopy
 
     plotConstraints(trajs, params)
+
+    saveFigs('ATC_Figures')
+
     plt.show()
+    resetRCParams()
