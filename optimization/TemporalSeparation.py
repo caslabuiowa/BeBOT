@@ -38,7 +38,7 @@ def temporalSeparation(bpList, elev=DEG_ELEV):
 
     """
     if len(bpList) < 2:
-        return 0.0
+        return np.inf
 
     distVeh = []
     for i, traj in enumerate(bpList[:-1]):
