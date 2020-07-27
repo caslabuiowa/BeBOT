@@ -56,6 +56,8 @@ def speedSquared(c1, c2):
 
     ax.plot([c1speed.t0, c1speed.tf], [c1speed.min()]*2, 'r--', label='c1 minimum speed')
     ax.plot([c2speed.t0, c2speed.tf], [c2speed.min()]*2, 'b--', label='c2 minimum speed')
+    print(f'{c1speed.min() = }')
+    print(f'{c2speed.min() = }')
 
     ax.set_title('Speed Squared')
     ax.set_xlabel('Time (s)')
@@ -77,6 +79,8 @@ def headingAngle(c1, c2):
 
     ax.plot([c1tan.t0, c1tan.tf], [c1tan.min()]*2, 'C0--', label='c1 minimum tangent')
     ax.plot([c2tan.t0, c1tan.tf], [c2tan.min()]*2, 'C1--', label='c2 minimum tangent')
+    print(f'{c1tan.min() = }')
+    print(f'{c2tan.min() = }')
 
     ax.set_title('Tangent of Heading Angle')
     ax.set_xlabel('Time (s)')
@@ -97,33 +101,14 @@ def angularRate(c1, c2):
     angrate1.plot(ax, showCpts=True, color='C0', label='c1 angular rate')
     angrate2.plot(ax, showCpts=False, color='C1', label='c2 angular rate')
 
-    print(f'wgts: {angrate1._wgts}')
-
     ax.plot([angrate1.t0, angrate1.tf], [angrate1.min()]*2, 'C0--', label='c1 minimum angular rate')
     ax.plot([angrate2.t0, angrate2.tf], [angrate2.min()]*2, 'C1--', label='c2 minimum angular rate')
+    print(f'{angrate1.min() = }')
+    print(f'{angrate2.min() = }')
 
     ax.set_title('Angular Rate')
     ax.set_xlabel('Time (s)')
     ax.set_ylabel(r'Angular Rate $\left( \frac{rad}{s^2} \right)$')
-    ax.legend()
-
-
-def distSqr(c1, c2, obs):
-    fig, ax = plt.subplots()
-
-    obsPoly = Bernstein(np.atleast_2d(obs.center).T*np.ones((2, c1.deg+1)), min(c1.t0, c2.t0), max(c1.tf, c2.tf))
-
-    c1c2 = c1 - c2
-    c1obs = c1 - obsPoly
-    c2obs = c2 - obsPoly
-
-    c1c2.normSquare().plot(ax, label='c1 to c2')
-    c1obs.normSquare().plot(ax, label='c1 to obstacle')
-    c2obs.normSquare().plot(ax, label='c2 to obstacle')
-
-    ax.set_title('Squared Distance Between Trajectories and Obstacle', wrap=True)
-    ax.set_xlabel('Time (s)')
-    ax.set_ylabel(r'Squared Distance $(m^2)$')
     ax.legend()
 
 
