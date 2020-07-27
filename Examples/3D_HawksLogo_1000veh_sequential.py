@@ -97,7 +97,11 @@ def cost(x, vidx, params):
         for i in range(1, nveh):
             traj2 = Bernstein(y[i*3:(i+1)*3, :])
             dv = traj - traj2
-            dist += dv.normSquare().cpts.sum()
+            # dist += dv.normSquare().cpts.sum()
+            temp = dv.normSquare().min()
+            if temp < params.dsafe:
+                dist -= np.inf
+            dist += temp
 
         return -dist
 
@@ -211,8 +215,9 @@ def createInipts(finalPts):
 
     for i in range(5):
         for j in range(2):
-            x = np.linspace(j*fmaxx/2, (j+1)*fmaxx/2, 20) + fminx
-            y = np.linspace(i*fmaxy/5, (i+1)*fmaxy/5, 5) + fminy
+            # The +1 and -1 here are so that we don't have overlapping initial points
+            x = np.linspace(j*fmaxx/2+1, (j+1)*fmaxx/2-1, 20) + fminx
+            y = np.linspace(i*fmaxy/5+1, (i+1)*fmaxy/5-1, 5) + fminy
 
             inipts[100*j+i*200:100*j+i*200+100, :2] = np.array(np.meshgrid(x, y)).T.reshape(-1, 2)
 
@@ -234,13 +239,14 @@ def createBounds(params):
         Bounds of the optimization problem.
 
     """
-    xlb = [params.inipts[:, 0].min()]*(params.deg - 1)
-    ylb = [params.inipts[:, 1].min()]*(params.deg - 1)
+    # The -1 and +1 are so that we can have a feasible x0, this is due to how the final points were generated
+    xlb = [params.inipts[:, 0].min()-1]*(params.deg - 1)
+    ylb = [params.inipts[:, 1].min()-1]*(params.deg - 1)
     zlb = [params.inipts[:, 2].min()]*(params.deg - 1)
 
     # Only need the Z value from final points since we want to keep everything else in a box above the initial points
-    xub = [params.inipts[:, 0].max()]*(params.deg - 1)
-    yub = [params.inipts[:, 1].max()]*(params.deg - 1)
+    xub = [params.inipts[:, 0].max()+1]*(params.deg - 1)
+    yub = [params.inipts[:, 1].max()+1]*(params.deg - 1)
     zub = [params.finalpts[:, 2].max()]*(params.deg - 1)
 
     return Bounds(xlb+ylb+zlb, xub+yub+zub)
@@ -346,24 +352,36 @@ if __name__ == '__main__':
         trajs.append(traj)
 
     tend = time.time()
+    trajs = np.concatenate(trajs)
     print('===============================================================')
     print(f'Total computation time for 1000 vehicles: {tend-tstart}')
     print('===============================================================')
 
     # Plot the trajectories
     plt.close('all')
-    trajs = np.concatenate(trajs)
+
     temp = Bernstein(trajs[0:NDIM, :])
     vehList = [temp]
     ax = temp.plot(showCpts=False)
     plt.plot([temp.cpts[0, -1]], [temp.cpts[1, -1]], [temp.cpts[2, -1]],
              'k.', markersize=15, zorder=10)
-    for i in range(100):
+    for i in range(1000):
         temp = Bernstein(trajs[i*NDIM:(i+1)*NDIM, :])
         vehList.append(temp)
         temp.plot(ax, showCpts=False)
         plt.plot([temp.cpts[0, -1]], [temp.cpts[1, -1]], [temp.cpts[2, -1]],
                  'k.', markersize=15, zorder=10)
+
+    distances = []
+    for i, traj in enumerate(vehList[:-1]):
+        for traj2 in vehList[i+1:]:
+            dv = traj - traj2
+            distances.append(dv.normSquare().min())
+
+    minDist = np.array(distances)
+    minDist.sort()
+    print('10 smallest distances:')
+    print(minDist[:10])
 
     i = 0
     while os.path.exists('1000_veh_sequential_' + str(i) + '.pickle'):

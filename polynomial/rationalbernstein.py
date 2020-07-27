@@ -24,7 +24,37 @@ class RationalBernstein(Base):
     def __init__(self, cpts=None, weights=None, t0=0.0, tf=1.0):
         assert cpts.shape == weights.shape, 'The shape of cpts and weights should be the same.'
         super().__init__(cpts=cpts, t0=t0, tf=tf)
-        self._wgts = np.array(weights, ndmin=2)
+        # self._wgts = np.array(weights, dtype=float, ndmin=2)
+
+        if weights is not None:
+            assert type(weights) is np.ndarray, 'Weights must be a numpy array'
+            assert weights.dtype == 'float64', 'Weights dtype must be numpy float64'
+            if self.dim == 1:
+                self._wgts = np.atleast_2d(weights)
+            else:
+                self._wgts = weights
+            assert self._wgts.shape == self._cpts.shape, 'Weights and control points must be the same shape.'
+        elif cpts is not None:
+            raise TypeError('Rational Bernstein polynomial requires weights')
+
+    @property
+    def wgts(self):
+        return self._wgts
+
+    @wgts.setter
+    def wgts(self, value):
+        self._curve = None
+
+        if (isinstance(value, np.ndarray) and
+                value.ndim == 2 and
+                value.dtype == 'float64'):
+            newWgts = value
+        else:
+            newWgts = np.array(value, ndmin=2, dtype=np.float64)
+
+        self._dim = newWgts.shape[0]
+        self._deg = newWgts.shape[1] - 1
+        self._wgts = newWgts
 
     def plot(self, ax=None, npts=1001, showCpts=True, **kwargs):
         if ax is None:
@@ -99,46 +129,33 @@ class RationalBernstein(Base):
             return min(c1min, c2min)
 
     def split(self, tDiv):
-        """Splits the curve into two curves at point tDiv
+        """Split the rational Bernstein polynomial in two at point tDiv.
 
-        Note that the two returned curves will have the SAME tf value as the
-        original curve. This may result in slightly unexpected behavior for a
-        1D curve when plotting since both slices of the original curve will
-        also be plotted on [0, tf]. The behavior should work as expected when
-        plotting in 2D though.
-
-        Paper Reference: Property 5: The de Casteljau Algorithm
+        Paper Reference: Property 8: Rational Recursive Algorithm
 
         :param tDiv: Point at which to split the curve
         :type tDiv: float
         :return: Tuple of curves. One before the split point and one after.
         :rtype: tuple(Bernstein, Bernstein)
         """
-        # c1 = self.copy()
-        # c2 = self.copy()
-
         cpts1 = []
         cpts2 = []
+        wgts1 = []
+        wgts2 = []
 
         if np.isnan(tDiv):
             print('[!] Warning, tDiv is {}, changing to 0.'.format(tDiv))
             tDiv = 0
 
         for d in range(self.dim):
-            left, right = deCasteljauSplit(self.cpts[d, :], tDiv - self.t0,
-                                           self.tf - self.t0)
-            cpts1.append([left])
-            cpts2.append([right[::-1]])
+            left, right = _ratDeCasteljauSplit(self.cpts[d, :], self.wgts[d, :], tDiv=tDiv, t0=self.t0, tf=self.tf)
+            cpts1.append([left[0]])
+            cpts2.append([right[0][::-1]])
+            wgts1.append([left[1]])
+            wgts2.append([right[1][::-1]])
 
-        # c1.cpts = cpts1
-        # c1.t0 = self.t0
-        # c1.tf = tDiv
-        # c2.cpts = cpts2
-        # c2.t0 = tDiv
-        # c2.tf = self.tf
-
-        c1 = RationalBernstein(cpts=np.concatenate(cpts1), weights=self._wgts, t0=self.t0, tf=tDiv)
-        c2 = RationalBernstein(cpts=np.concatenate(cpts2), weights=self._wgts, t0=tDiv, tf=self.tf)
+        c1 = RationalBernstein(cpts=np.concatenate(cpts1), weights=np.concatenate(wgts1), t0=self.t0, tf=tDiv)
+        c2 = RationalBernstein(cpts=np.concatenate(cpts2), weights=np.concatenate(wgts2), t0=tDiv, tf=self.tf)
 
         return c1, c2
 
@@ -197,8 +214,8 @@ def _bernBasisMat(n):
 
 
 @njit(cache=True)
-def deCasteljauSplit(cpts, tDiv, tf=1.0):
-    """Uses the de Casteljau algorithm to split the curve at tDiv
+def _ratDeCasteljauSplit(cpts, wgts, tDiv, t0=0.0, tf=1.0):
+    """Use the de Casteljau algorithm to split the rational Bernstein polynomial at tDiv.
 
     This function is similar to the de Casteljau curve function but instead of
     drawing a curve, it returns two sets of control points which define the
@@ -218,27 +235,39 @@ def deCasteljauSplit(cpts, tDiv, tf=1.0):
         element is the control points defining the curve to the right of tDiv.
     :rtype: tuple(numpy.ndarray, numpy.ndarray)
     """
-    tDiv = tDiv/tf
+    tDiv = (tDiv-t0) / (tf-t0)
     cptsLeft = np.zeros(cpts.size)
     cptsRight = np.zeros(cpts.size)
+    wgtsLeft = np.zeros(wgts.size)
+    wgtsRight = np.zeros(wgts.size)
     idx = 0
 
     newCpts = cpts.copy()
     cptsTemp = cpts.copy()
+    newWgts = wgts.copy()
+    wgtsTemp = wgts.copy()
     while newCpts.size > 1:
         cptsLeft[idx] = cptsTemp[0]
         cptsRight[idx] = cptsTemp[-1]
+        wgtsLeft[idx] = wgtsTemp[0]
+        wgtsRight[idx] = wgtsTemp[-1]
         idx += 1
 
         cptsTemp = np.empty(newCpts.size-1)
+        wgtsTemp = np.empty(newWgts.size-1)
         for i in range(cptsTemp.size):
-            cptsTemp[i] = (1-tDiv)*newCpts[i] + tDiv*newCpts[i+1]
+            wgtsTemp[i] = (1-tDiv)*newWgts[i] + tDiv*newWgts[i+1]
+            a = newWgts[i] / wgtsTemp[i]
+            b = newWgts[i+1] / wgtsTemp[i]
+            cptsTemp[i] = (1-tDiv)*a*newCpts[i] + tDiv*b*newCpts[i+1]
 
         newCpts = cptsTemp.copy()
+        newWgts = wgtsTemp.copy()
 
     cptsLeft[-1] = cptsRight[-1] = newCpts[0]
+    wgtsLeft[-1] = wgtsRight[-1] = newWgts[0]
 
-    return cptsLeft, cptsRight
+    return (cptsLeft, wgtsLeft), (cptsRight, wgtsRight)
 
 
 if __name__ == '__main__':

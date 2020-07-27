@@ -45,103 +45,6 @@ def resetRCParams():
     plt.rcParams.update(plt.rcParamsDefault)
 
 
-def initialPlot(c1, c2, obs):
-    fig, ax = plt.subplots()
-
-    c1.plot(ax, color='C0', label='c1')
-    c2.plot(ax, color='C1', label='c2')
-    ax.add_patch(obs)
-
-    ax.set_title('Initial Figure')
-    ax.set_xlabel('X Position (m)')
-    ax.set_ylabel('Y Position (m)')
-    ax.set_xlim(XLIM)
-    ax.set_ylim(YLIM)
-    ax.legend()
-
-
-def endPoints(c1, c2, obs):
-    fig, ax = plt.subplots()
-
-    c1.plot(ax, showCpts=False, color='C0')
-    c2.plot(ax, showCpts=False, color='C1')
-    ax.add_patch(obs)
-
-    for i, pt in enumerate(np.concatenate([c1.cpts[:, (0, -1)].T, c2.cpts[:, (0, -1)].T])):
-        ax.plot(pt[0], pt[1], 'k.')
-
-        # This if statement is purely for modifying the position of the drawn coordinates
-        if i % 2:
-            ax.text(pt[0]-3.5, pt[1]-1, f'({pt[0]}, {pt[1]})')
-        else:
-            ax.text(pt[0], pt[1], f'({pt[0]}, {pt[1]})')
-
-    ax.set_title('End Points')
-    ax.set_xlabel('X Position (m)')
-    ax.set_ylabel('Y Position (m)')
-    ax.set_xlim(XLIM)
-    ax.set_ylim(YLIM)
-
-
-def convexHull(c1, c2, obs):
-    fig, ax = plt.subplots()
-
-    for cpts in [c1.cpts, c2.cpts]:
-        plotCvxHull(cpts, ax)
-
-    c1.plot(ax, color='C0')
-    c2.plot(ax, color='C1')
-    ax.add_patch(obs)
-
-    ax.set_title('Convex Hull')
-    ax.set_xlabel('X Position (m)')
-    ax.set_ylabel('Y Position (m)')
-    ax.set_xlim(XLIM)
-    ax.set_ylim(YLIM)
-
-
-def convexHullSplit(c1, c2, obs):
-    fig, ax = plt.subplots()
-
-    c1L, c1R = c1.split(0.5*(c1.tf-c1.t0)+c1.t0)
-    c2L, c2R = c2.split(0.5*(c2.tf-c2.t0)+c2.t0)
-
-    c1L.plot(ax, color='C0')
-    c1R.plot(ax, color='C2')
-    c2L.plot(ax, color='C1')
-    c2R.plot(ax, color='C3')
-
-    for cpts in [c1L.cpts, c1R.cpts, c2L.cpts, c2R.cpts]:
-        plotCvxHull(cpts, ax)
-
-    ax.add_patch(obs)
-    ax.set_title('Split Convex Hull')
-    ax.set_xlabel('X Position (m)')
-    ax.set_ylabel('Y Position (m)')
-    ax.set_xlim(XLIM)
-    ax.set_ylim(YLIM)
-
-
-def convexHullElev(c1, c2, obs):
-    fig, ax = plt.subplots()
-
-    c1E = c1.elev(10)
-    c2E = c2.elev(10)
-
-    c1E.plot(ax, color='C0')
-    c2E.plot(ax, color='C1')
-
-    for cpts in [c1E.cpts, c2E.cpts]:
-        plotCvxHull(cpts, ax)
-
-    ax.add_patch(obs)
-    ax.set_title('Elevated Convex Hull')
-    ax.set_xlabel('X Position (m)')
-    ax.set_ylabel('Y Position (m)')
-    ax.set_xlim(XLIM)
-    ax.set_ylim(YLIM)
-
-
 def speedSquared(c1, c2):
     fig, ax = plt.subplots()
 
@@ -172,8 +75,8 @@ def headingAngle(c1, c2):
     c1tan.plot(ax, showCpts=False, color='C0', label='c1 tangent')
     c2tan.plot(ax, showCpts=False, color='C1', label='c2 tangent')
 
-    ax.plot([c1tan.t0, c1tan.tf], [c1tan.min()]*2, 'r--', label='c1 minimum tangent')
-    ax.plot([c2tan.t0, c1tan.tf], [c2tan.min()]*2, 'b--', label='c2 minimum tangent')
+    ax.plot([c1tan.t0, c1tan.tf], [c1tan.min()]*2, 'C0--', label='c1 minimum tangent')
+    ax.plot([c2tan.t0, c1tan.tf], [c2tan.min()]*2, 'C1--', label='c2 minimum tangent')
 
     ax.set_title('Tangent of Heading Angle')
     ax.set_xlabel('Time (s)')
@@ -184,18 +87,20 @@ def headingAngle(c1, c2):
 def angularRate(c1, c2):
     fig, ax = plt.subplots()
 
-    angrate1 = _angularRate(c1)
-    angrate2 = _angularRate(c2)
+    angrate1 = _angularRate(c1.elev(5))
+    angrate2 = _angularRate(c2.elev(5))
 
 
     cpts1 = np.concatenate([[np.linspace(angrate1.t0, angrate1.tf, angrate1.deg+1)], angrate1.cpts])
     cpts2 = np.concatenate([[np.linspace(angrate2.t0, angrate2.tf, angrate2.deg+1)], angrate2.cpts])
 
-    angrate1.plot(ax, showCpts=False, color='C0', label='c1 angular rate')
+    angrate1.plot(ax, showCpts=True, color='C0', label='c1 angular rate')
     angrate2.plot(ax, showCpts=False, color='C1', label='c2 angular rate')
 
-    ax.plot([angrate1.t0, angrate1.tf], [angrate1.min()]*2, 'r--', label='c1 minimum angular rate')
-    ax.plot([angrate2.t0, angrate2.tf], [angrate2.min()]*2, 'b--', label='c2 minimum angular rate')
+    print(f'wgts: {angrate1._wgts}')
+
+    ax.plot([angrate1.t0, angrate1.tf], [angrate1.min()]*2, 'C0--', label='c1 minimum angular rate')
+    ax.plot([angrate2.t0, angrate2.tf], [angrate2.min()]*2, 'C1--', label='c2 minimum angular rate')
 
     ax.set_title('Angular Rate')
     ax.set_xlabel('Time (s)')
@@ -235,7 +140,7 @@ def minDist(c1, c2, obs):
 
     ax.plot([pt1[0], pt2[0]], [pt1[1], pt2[1]], 'k-', label='Minimum distance line')
     mid = pt1 + 0.5*(pt2-pt1)
-    ax.text(mid[0]+0.3, mid[1], f'Dist: {dist}')
+    ax.text(mid[0]+0.3, mid[1], f'Distance: {dist:0.3f} m')
 
     ax.set_title('Minimum Spatial Distance')
     ax.set_xlabel('X Position (m)')
@@ -307,16 +212,10 @@ if __name__ == '__main__':
     c1 = Bernstein(cpts1, t0=10, tf=20)
     c2 = Bernstein(cpts2, t0=10, tf=20)
 
-    # initialPlot(c1, c2, obs())
-    # endPoints(c1, c2, obs())
-    # convexHull(c1, c2, obs())
-    # convexHullSplit(c1, c2, obs())
-    # convexHullElev(c1, c2, obs())
     speedSquared(c1, c2)
     headingAngle(c1, c2)
     angularRate(c1, c2)
     minDist(c1, c2, obs())
-    # distSqr(c1, c2, obs())
 
     plt.show()
 
