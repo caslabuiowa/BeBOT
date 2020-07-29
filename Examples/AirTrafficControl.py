@@ -401,9 +401,9 @@ class Parameters:
         self.nveh = 4           # Number of vehicles
         self.deg = 5            # Degree of Bernstein polynomials being used
         self.dsafe = 5000       # Minimum safe distance between vehicles (m)
-        self.vmin = 200         # Minimum speed (m/s)
-        self.vmax = 260         # Maximum speed (m/s)
-        self.wmax = 0.05236     # Maximum angular rate (rad/s)
+        self.vmin = 200         # Minimum speed (m/s) typical of a commercial jet
+        self.vmax = 260         # Maximum speed (m/s) typical of a commercial jet
+        self.wmax = 0.05236     # Maximum angular rate (rad/s) "standard rate turn" of 3 deg/s
 
         # Initial points
         inipts = np.array([

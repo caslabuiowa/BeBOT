@@ -442,7 +442,12 @@ if __name__ == '__main__':
     params = Parameters()
 
     # Set everything up for the optimization
-    x0 = initGuess(params)
+    # x0 = initGuess(params)
+    x0 = np.array([-1.14236209e+07, -1.17505311e+07,  4.25090349e+06,  4.81020775e+06,
+                   -1.03432730e+07, -1.11457879e+07,  5.88226574e+06,  7.00101340e+06,
+                   -9.37640426e+06, -9.89408351e+06,  4.52734993e+06,  4.11208411e+06,
+                   -1.24791264e+07, -1.27599007e+07,  5.83341043e+06,  4.94995099e+06,
+                    1.39398207e+04,  2.62991490e+04,  1.30519275e+04,  1.04984734e+04])
     def fn(x): return cost(x, params.nveh)
     cons = [{'type': 'ineq',
              'fun': lambda x: nonlcon(x, params)}]
@@ -459,7 +464,7 @@ if __name__ == '__main__':
                        method='SLSQP',
                        options={'maxiter': 300,
                                 'disp': True,
-                                'ftol': 60*5,
+                                'ftol': 10,
                                 'iprint': 2})
 
     # Plot everything

@@ -46,7 +46,7 @@ class Bernstein(Base):
 
     def __init__(self, cpts=None, t0=0.0, tf=1.0):
         super().__init__(cpts=cpts, t0=t0, tf=tf)
-        self.tau = np.linspace(t0, tf, 1001)
+        # self.tau = np.linspace(t0, tf, 1001)
 
     def __add__(self, curve):
         return self.add(curve)
@@ -83,6 +83,16 @@ class Bernstein(Base):
             curve[i] = deCasteljauCurve(pts, tau, self.t0, self.tf)
 
         return curve
+
+    @property
+    def tau(self):
+        if self._tau is None:
+            self._tau = np.linspace(self.t0, self.tf, 1001)
+        return self._tau
+
+    @tau.setter
+    def tau(self, val):
+        self._tau = val
 
     @property
     def x(self):
@@ -377,9 +387,9 @@ class Bernstein(Base):
 
         elevPts = []
         for cpts in self.cpts:
-            elevPts.append(np.dot(cpts, elevMat))
+            elevPts.append([np.dot(cpts, elevMat)])
 
-        elevPts = np.vstack(elevPts)
+        elevPts = np.concatenate(elevPts)
 
         curveElev = self.copy()
         curveElev.cpts = elevPts

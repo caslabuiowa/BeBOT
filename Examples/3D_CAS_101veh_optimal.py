@@ -115,11 +115,11 @@ def cost(x, params):
     """
     """
     y = reshape(x, params.nveh, params.deg, params.iniPts, params.finalPts)
-    trajs = build_traj_list(y, params)
+    # trajs = build_traj_list(y, params)
 
-    return sum(sum([traj.diff().diff().normSquare().cpts.squeeze() for traj in trajs]))
+    # return sum(sum([traj.diff().diff().normSquare().cpts.squeeze() for traj in trajs]))
 
-    # return _euclideanObjective(y, params.nveh, params.ndim)
+    return _euclideanObjective(y, params.nveh, params.ndim)
     # return np.linalg.norm(np.diff(y))
 
 @njit(cache=True)
@@ -228,9 +228,10 @@ def main():
     tstart = time.time()
     results = minimize(fn, x0,
                        constraints=cons,
-                       bounds=Bounds(-30, 130),
+                       bounds=Bounds(-60, 160),
                        method='SLSQP',
                        options={'maxiter': 250,
+                                'ftol': 1e-3,
                                 'disp': True,
                                 'iprint': 2})
     tend = time.time()
@@ -267,24 +268,24 @@ def main():
     return results, params
 
 
-def test():
-    params = Parameters()
-    x0 = init_guess(params, 10)
-    print(f'x0 = {x0.round(3)}')
-    tf, y = reshape(x0, params.nveh, params.deg, params.iniPts,
-                    params.iniSpeeds, params.iniAngs, params.finalPts,
-                    params.finalSpeeds, params.finalAngs)
-    print(f'tf = {tf}')
-    print(f'y = \n{y.round(3)}')
+# def test():
+#     params = Parameters()
+#     x0 = init_guess(params, 10)
+#     print(f'x0 = {x0.round(3)}')
+#     tf, y = reshape(x0, params.nveh, params.deg, params.iniPts,
+#                     params.iniSpeeds, params.iniAngs, params.finalPts,
+#                     params.finalSpeeds, params.finalAngs)
+#     print(f'tf = {tf}')
+#     print(f'y = \n{y.round(3)}')
 
-    trajs = build_traj_list(y, tf, params)
-    temp_sep = temporal_separation_cons(trajs, params)
-    print(temp_sep.round(3))
-    obs_sep = obstacle_cons(trajs, params)
-    print(obs_sep.round(3))
-    print(np.atleast_2d(np.concatenate((temp_sep, obs_sep)).round(3)).T)
-    max_speed = max_speed_cons(trajs, tf, params)
-    print(max_speed.round(3))
+#     trajs = build_traj_list(y, tf, params)
+#     temp_sep = temporal_separation_cons(trajs, params)
+#     print(temp_sep.round(3))
+#     obs_sep = obstacle_cons(trajs, params)
+#     print(obs_sep.round(3))
+#     print(np.atleast_2d(np.concatenate((temp_sep, obs_sep)).round(3)).T)
+#     max_speed = max_speed_cons(trajs, tf, params)
+    # print(max_speed.round(3))
 
 
 def plot_obstacles(obstacles, ax, params):
@@ -299,7 +300,6 @@ def plot_obstacles(obstacles, ax, params):
         ax.add_artist(obsArtist)
 
 
-TEST = False
 if __name__ == '__main__':
     plt.close('all')
     plt.rcParams.update({
@@ -311,10 +311,59 @@ if __name__ == '__main__':
             'lines.linewidth': 4,
             'lines.markersize': 18
             })
-    if TEST:
-        test()
-    else:
-        results, params = main()
-        y = reshape(results.x, params.nveh, params.deg, params.iniPts,
-                        params.finalPts)
-        trajs = build_traj_list(y, params)
+
+    # results, params = main()
+
+    params = Parameters()
+    x0 = init_guess(params)
+
+    def fn(x): return cost(x, params)
+    bounds = Bounds([0, 0, 0]*params.nveh*(params.deg-1), [30, 35, 100]*params.nveh*(params.deg-1))
+    cons = [{'type': 'ineq',
+             'fun': lambda x: nonlinear_constraints(x, params)}]
+
+    # for i in range(100):
+    #     y = reshape(x0, params.nveh, params.deg, params.iniPts, params.finalPts)
+    #     trajs = build_traj_list(y, params)
+    #     fn(x0)
+    #     temporal_separation_cons(trajs, params)
+
+    tstart = time.time()
+    results = minimize(fn, x0,
+                        constraints=cons,
+                        bounds=bounds,
+                        method='SLSQP',
+                        options={'maxiter': 250,
+                                'ftol': 1e-3,
+                                'disp': True,
+                                'iprint': 2})
+    tend = time.time()
+    print('===============================================================')
+    print(f'Total computation time for {params.nveh} vehicles: {tend-tstart}')
+    print('===============================================================')
+
+    print(f'Results: {results.x}')
+
+    print('Nonlcon:')
+    print(nonlinear_constraints(results.x, params))
+
+    y = reshape(results.x, params.nveh, params.deg, params.iniPts,
+                params.finalPts)
+    trajs = build_traj_list(y, params)
+
+    ax = trajs[0].plot(showCpts=False)
+    for traj in trajs[1:]:
+        traj.plot(axisHandle=ax, showCpts=False)
+
+    for curve in trajs:
+        plt.plot([curve.cpts[0, -1]],
+                  [curve.cpts[1, -1]],
+                  [curve.cpts[2, -1]],
+                  'k.', markersize=40)
+
+    y = reshape(results.x, params.nveh, params.deg, params.iniPts,
+                    params.finalPts)
+    trajs = build_traj_list(y, params)
+
+    plt.show()
+    # last run, 10184.20985 seconds (7/29/2020)

@@ -78,6 +78,8 @@ def cost(x, vidx, params):
     y = reshape(x, np.atleast_2d([]), params.ndim, params.inipts[vidx, :],
                 params.finalpts[vidx, :])
     return np.linalg.norm(np.diff(y))
+    # traj = Bernstein(y[-3:])
+    # return sum(traj.diff().diff().normSquare().cpts.squeeze())
 
 
 @njit(cache=True)
@@ -207,14 +209,16 @@ if __name__ == '__main__':
     print(f'Total computation time for {NVEH} vehicles: {tend-tstart}')
     print('===============================================================')
 
-    temp = Bernstein(traj[0:NDIM, :])
-    vehList = [temp]
-    ax = temp.plot(showCpts=False)
-    plt.plot([temp.cpts[0, -1]], [temp.cpts[1, -1]], [temp.cpts[2, -1]],
-             'k.', markersize=15, zorder=-1)
-    for i in range(NVEH):
-        temp = Bernstein(traj[i*NDIM:(i+1)*NDIM, :])
-        vehList.append(temp)
-        temp.plot(ax, showCpts=False)
-        plt.plot([temp.cpts[0, -1]], [temp.cpts[1, -1]], [temp.cpts[2, -1]],
-                 'k.', markersize=40, zorder=10)
+    # temp = Bernstein(traj[0:NDIM, :])
+    # vehList = [temp]
+    # ax = temp.plot(showCpts=False)
+    # plt.plot([temp.cpts[0, -1]], [temp.cpts[1, -1]], [temp.cpts[2, -1]],
+    #          'k.', markersize=15, zorder=-1)
+    # for i in range(NVEH):
+    #     temp = Bernstein(traj[i*NDIM:(i+1)*NDIM, :])
+    #     vehList.append(temp)
+    #     temp.plot(ax, showCpts=False)
+    #     plt.plot([temp.cpts[0, -1]], [temp.cpts[1, -1]], [temp.cpts[2, -1]],
+    #              'k.', markersize=40, zorder=10)
+
+    # plt.show()

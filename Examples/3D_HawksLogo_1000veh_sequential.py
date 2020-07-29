@@ -304,7 +304,7 @@ class Parameters:
 if __name__ == '__main__':
     plt.close('all')
     NDIM = 3        # Number of dimensions
-    DEG = 2         # Order of the Bernstein polynomial approximation
+    DEG = 3         # Order of the Bernstein polynomial approximation
     DSAFE = 0.9     # Minimum safety distance between vehicles
     np.random.seed(3)
 
@@ -371,6 +371,8 @@ if __name__ == '__main__':
         temp.plot(ax, showCpts=False)
         plt.plot([temp.cpts[0, -1]], [temp.cpts[1, -1]], [temp.cpts[2, -1]],
                  'k.', markersize=15, zorder=10)
+
+    plt.show()
 
     distances = []
     for i, traj in enumerate(vehList[:-1]):
