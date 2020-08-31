@@ -172,8 +172,8 @@ def headingAngle(c1, c2):
     c1tan = c1dot.y / c1dot.x
     c2tan = c2dot.y / c2dot.x
 
-    c1tan.plot(ax, color='C0', label=r'$\tan(\frac{\dot C^{[1]}_y(t)}{\dot C^{[1]}_x(t)})$')
-    c2tan.plot(ax, color='C1', label=r'$\tan(\frac{\dot C^{[2]}_y(t)}{\dot C^{[2]}_x(t)})$')
+    c1tan.plot(ax, color='C0', label=r'$\tan(\frac{\dot y^{[1]}(t)}{\dot x^{[1]}(t)})$')
+    c2tan.plot(ax, color='C1', label=r'$\tan(\frac{\dot y^{[2]}(t)}{\dot x^{[2]}(t)})$')
     ax.set_title('Tangent of Heading Angle')
     ax.set_xlabel('Time (s)')
     ax.set_ylabel(r'$\tan (\psi)$')
