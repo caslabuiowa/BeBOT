@@ -11,7 +11,6 @@ from matplotlib.patches import Circle
 import numpy as np
 from scipy.spatial import ConvexHull
 
-from constants import DEG_ELEV
 from polynomial.bernstein import Bernstein
 from polynomial.rationalbernstein import RationalBernstein
 
@@ -48,8 +47,8 @@ def resetRCParams():
 def initialPlot(c1, c2, obs):
     fig, ax = plt.subplots()
 
-    c1.plot(ax, color='C0', label='c1')
-    c2.plot(ax, color='C1', label='c2')
+    c1.plot(ax, color='C0', label=r'$\mathbf{C}^{[1]}(t)$')
+    c2.plot(ax, color='C1', label=r'$\mathbf{C}^{[2]}(t)$')
     ax.add_patch(obs)
 
     ax.set_title('Initial Figure')
@@ -148,8 +147,8 @@ def speedSquared(c1, c2):
     c1speed = c1.diff().normSquare()
     c2speed = c2.diff().normSquare()
 
-    c1speed.plot(ax, color='C0', label='c1 speed')
-    c2speed.plot(ax, color='C1', label='c2 speed')
+    c1speed.plot(ax, color='C0', label=r'$||\dot \mathbf{C}^{[1]}(t)||^2$')
+    c2speed.plot(ax, color='C1', label=r'$||\dot \mathbf{C}^{[2]}(t)||^2$')
 
     cpts1 = np.concatenate([[np.linspace(c1speed.t0, c1speed.tf, c1speed.deg+1)],
                             c1speed.cpts])
@@ -173,8 +172,8 @@ def headingAngle(c1, c2):
     c1tan = c1dot.y / c1dot.x
     c2tan = c2dot.y / c2dot.x
 
-    c1tan.plot(ax, color='C0', label='c1 tangent')
-    c2tan.plot(ax, color='C1', label='c2 tangent')
+    c1tan.plot(ax, color='C0', label=r'$\tan(\frac{\dot C^{[1]}_y(t)}{\dot C^{[1]}_x(t)})$')
+    c2tan.plot(ax, color='C1', label=r'$\tan(\frac{\dot C^{[2]}_y(t)}{\dot C^{[2]}_x(t)})$')
     ax.set_title('Tangent of Heading Angle')
     ax.set_xlabel('Time (s)')
     ax.set_ylabel(r'$\tan (\psi)$')
@@ -187,14 +186,13 @@ def angularRate(c1, c2):
     angrate1 = _angularRate(c1)
     angrate2 = _angularRate(c2)
 
-
     cpts1 = np.concatenate([[np.linspace(angrate1.t0, angrate1.tf, angrate1.deg+1)], angrate1.cpts])
     cpts2 = np.concatenate([[np.linspace(angrate2.t0, angrate2.tf, angrate2.deg+1)], angrate2.cpts])
     plotCvxHull(cpts1, ax)
     plotCvxHull(cpts2, ax)
 
-    angrate1.plot(ax, color='C0', label='c1 angular rate')
-    angrate2.plot(ax, color='C1', label='c2 angular rate')
+    angrate1.plot(ax, color='C0', label=r'$\omega^{[1]}(t)$')
+    angrate2.plot(ax, color='C1', label=r'$\omega^{[2]}(t)$')
     ax.set_title('Angular Rate')
     ax.set_xlabel('Time (s)')
     ax.set_ylabel(r'Angular Rate $\left( \frac{rad}{s^2} \right)$')
@@ -210,9 +208,9 @@ def distSqr(c1, c2, obs):
     c1obs = c1 - obsPoly
     c2obs = c2 - obsPoly
 
-    c1c2.normSquare().plot(ax, label='c1 to c2')
-    c1obs.normSquare().plot(ax, label='c1 to obstacle')
-    c2obs.normSquare().plot(ax, label='c2 to obstacle')
+    c1c2.normSquare().plot(ax, label=r'$||\mathbf{C}^{[1]}(t) - \mathbf{C}^{[2]}(t)||^2$')
+    c1obs.normSquare().plot(ax, label=r'$||\mathbf{C}^{[1]}(t) - \mathbf{Obs}(t)||^2$')
+    c2obs.normSquare().plot(ax, label=r'$||\mathbf{C}^{[2]}(t) - \mathbf{Obs}(t)||^2$')
 
     ax.set_title('Squared Distance Between Trajectories and Obstacle', wrap=True)
     ax.set_xlabel('Time (s)')
@@ -232,8 +230,9 @@ def _angularRate(bp):
     num = yddot*xdot - xddot*ydot
     den = xdot*xdot + ydot*ydot
 
-    cpts = num.elev(DEG_ELEV).cpts / den.elev(DEG_ELEV).cpts
-    wgts = den.elev(DEG_ELEV).cpts
+    # Elevating by 20 so that the control points don't become very large
+    cpts = num.elev(20).cpts / den.elev(20).cpts
+    wgts = den.elev(20).cpts
     # cpts = num.cpts / den.cpts
     # wgts = den.cpts
 
