@@ -88,8 +88,8 @@ def formatPlot(ax, title, xlabel='X Position (m)', ylabel='Y Position (m)', zlab
 
 
 def initPlot(c1, c2, obs):
-    ax = c1.plot(color='C0', label='c3')
-    c2.plot(ax, color='C1', label='c4')
+    ax = c1.plot(color='C0', label=r'$\mathbf{C}^{[3]}(t)$')
+    c2.plot(ax, color='C1', label=r'$\mathbf{C}^{[4]}(t)$')
     obs.plot(ax)
 
     formatPlot(ax, '3D Initial Figure')
@@ -164,8 +164,8 @@ def speedSquared(c1, c2):
     c1speed = c1.diff().normSquare()
     c2speed = c2.diff().normSquare()
 
-    c1speed.plot(ax, color='C0', label='c3 speed')
-    c2speed.plot(ax, color='C1', label='c4 speed')
+    c1speed.plot(ax, color='C0', label=r'$||\dot \mathbf{C}^{[3]}(t)||^2$')
+    c2speed.plot(ax, color='C1', label=r'$||\dot \mathbf{C}^{[4]}(t)||^2$')
 
     cpts1 = np.concatenate([[np.linspace(c1speed.t0, c1speed.tf, c1speed.deg+1)],
                             c1speed.cpts])
@@ -186,8 +186,8 @@ def accelSquared(c1, c2):
     c1speed = c1.diff().diff().normSquare()
     c2speed = c2.diff().diff().normSquare()
 
-    c1speed.plot(ax, color='C0', label='c3 accel')
-    c2speed.plot(ax, color='C1', label='c4 accel')
+    c1speed.plot(ax, color='C0', label=r'$||\ddot \mathbf{C}^{[3]}(t)||^2$')
+    c2speed.plot(ax, color='C1', label=r'$||\ddot \mathbf{C}^{[4]}(t)||^2$')
 
     cpts1 = np.concatenate([[np.linspace(c1speed.t0, c1speed.tf, c1speed.deg+1)],
                             c1speed.cpts])
@@ -211,9 +211,9 @@ def distSqr(c1, c2, obs):
     c1obs = c1 - obsPoly
     c2obs = c2 - obsPoly
 
-    c1c2.normSquare().plot(ax, label='c3 to c4')
-    c1obs.normSquare().plot(ax, label='c3 to obstacle')
-    c2obs.normSquare().plot(ax, label='c4 to obstacle')
+    c1c2.normSquare().plot(ax, label=r'$||\mathbf{C}^{[3]}(t) - \mathbf{C}^{[4]}(t)||^2$')
+    c1obs.normSquare().plot(ax, label=r'$||\mathbf{C}^{[3]}(t) - \mathbf{Obs}(t)||^2$')
+    c2obs.normSquare().plot(ax, label=r'$||\mathbf{C}^{[4]}(t) - \mathbf{Obs}(t)||^2$')
 
     ax.set_title('3D Squared Distance Between Trajectories and Obstacle', wrap=True)
     ax.set_xlabel('Time (s)')
