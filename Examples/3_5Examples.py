@@ -27,7 +27,7 @@ def setRCParams():
     # for an IEEE publication. Also sets font sizes and line widths for easier
     # viewing.
     plt.rcParams.update({
-                'font.size': 24,
+                'font.size': 40,
                 'figure.titlesize': 40,
                 'pdf.fonttype': 42,
                 'ps.fonttype': 42,
@@ -115,8 +115,8 @@ def angularRate(c1, c2):
 def minDist(c1, c2, obs):
     fig, ax = plt.subplots()
 
-    c1.plot(ax, showCpts=False, color='C0', label='c1')
-    c2.plot(ax, showCpts=False, color='C1', label='c2')
+    c1.plot(ax, showCpts=False, color='C0', label=r'$\mathbf{C}^{[1]}$')
+    c2.plot(ax, showCpts=False, color='C1', label=r'$\mathbf{C}^{[5]}$')
 
     dist, t1, t2 = c1.minDist(c2)
 
@@ -125,11 +125,13 @@ def minDist(c1, c2, obs):
 
     ax.plot([pt1[0], pt2[0]], [pt1[1], pt2[1]], 'k-', label='Minimum distance line')
     mid = pt1 + 0.5*(pt2-pt1)
-    ax.text(mid[0]+0.3, mid[1], f'Distance: {dist:0.3f} m')
+    ax.text(mid[0]-7.5, mid[1]-0.75, f'Distance: {dist:0.3f} m')
 
     ax.set_title('Minimum Spatial Distance')
     ax.set_xlabel('X Position (m)')
     ax.set_ylabel('Y Position (m)')
+    ax.set_xlim([-1, 13])
+    ax.set_ylim([-2, 11])
     ax.legend()
 
 
@@ -192,7 +194,7 @@ if __name__ == '__main__':
     cpts1 = np.array([[0, 2, 4, 6, 8, 10],
                       [5, 0, 2, 3, 10, 3]], dtype=float)
     cpts2 = np.array([[1, 3, 6, 8, 10, 12],
-                      [6, 9, 10, 11, 8, 8]], dtype=float)
+                      [7, 11, 10, 6, 8, 8]], dtype=float)
     # Bernstein polynomials
     c1 = Bernstein(cpts1, t0=10, tf=20)
     c2 = Bernstein(cpts2, t0=10, tf=20)

@@ -98,12 +98,14 @@ def cost(x, vidx, params):
             traj2 = Bernstein(y[i*3:(i+1)*3, :])
             dv = traj - traj2
             # dist += dv.normSquare().cpts.sum()
-            temp = dv.normSquare().min()
-            if temp < params.dsafe:
-                dist -= np.inf
-            dist += temp
 
-        return -dist
+            # temp = dv.normSquare().min()
+            # if temp < params.dsafe:
+            #     dist -= np.inf
+            # dist += temp
+            dist += sum(100/dv.normSquare().elev(DEG_ELEV).cpts.squeeze())
+
+        return dist
 
     else:
         return 0.0
