@@ -622,64 +622,8 @@ class Bernstein(Base):
 
             return min(c1min, c2min)
 
-#    def max4(self, dim=0, tol=1e-6, maxIter=1000):
-#        """Returns the maximum value of the Bezier curve in a single dimension
-#
-#        Finds the maximum value of the Bezier curve. This is done by first
-#        checking the first and last control points since the first and last
-#        point lie on the curve. If the first or last control point is not the
-#        maximum value, the curve is split at the highest control point. The new
-#        maximum value is then defined as the highest control point of the two
-#        new curves. This continues until the difference between the new maximum
-#        and old maximum values is within the desired tolerance.
-#
-#        :param dim: Which dimension to return the maximum of.
-#        :type dim: int
-#        :param tol: Tolerance of the maximum value.
-#        :type tol: float
-#        :param maxIter: Maximum number of iterations to search for the minimum.
-#        :type maxIter: int
-#        :return: Maximum value of the Bezier curve. None if maximum iterations
-#            is met.
-#        :rtype: float or None
-#        """
-#        maxVal = max(self.cpts[dim, :])
-#
-#        if self.cpts[dim, 0] == maxVal:
-#            return self.cpts[dim, 0]
-#
-#        elif self.cpts[dim, -1] == maxVal:
-#            return self.cpts[dim, -1]
-#
-#        else:
-#            lastMax = np.inf
-#            newCurve = self.copy()
-#            for _ in range(maxIter):
-#                splitPoint = (np.argmax(newCurve.cpts[dim, :])
-#                              / (newCurve.deg+1.0))
-#                c1, c2 = newCurve.split(splitPoint)
-#
-#                max1 = max(c1.cpts[dim, :])
-#                max2 = max(c2.cpts[dim, :])
-#
-#                if max1 > max2:
-#                    newCurve = c1
-#                    newMax = max1
-#
-#                else:
-#                    newCurve = c2
-#                    newMax = max2
-#
-#                if np.abs(newMax-lastMax)/newMax < tol:
-#                    return newMax
-#                else:
-#                    lastMax = newMax
-#
-#            print('Maximum number of iterations met')
-#            return None
-
-# TODO: fix max os that it behaves like min above
-    def max(self, dim=0, globMax=np.inf, tol=1e-6):  # , maxIter=1000):
+# TODO: fix max so that it behaves like min above
+    def max(self, dim=0, globMax=-np.inf, tol=1e-6):
         """Returns the maximum value of the Bernstein polynomial in a single
         dimension
 
@@ -701,7 +645,11 @@ class Bernstein(Base):
             iterations is met.
         :rtype: float or None
         """
-        maxIdx = np.argmax(self.cpts[dim, :])
+        lb = self.cpts[dim, (0, -1)].min()
+        if lb > globMax:
+            globMax = lb
+
+        maxIdx = self.cpts[dim, :].argmax()
         newMax = max(self.cpts[dim, :])
 
         error = np.abs(globMax-newMax)
@@ -1362,6 +1310,95 @@ def _minDist(cpts1, cpts2, count=0, alpha=np.inf, eps=1e-9, t1_l=0., t1_h=1., t2
         return alpha, tdiv1, tdiv2
 
 
+def _colCheck(cpts1, cpts2, count=0, maxIter=10, eps=1e-9):
+    """
+    Find the minimum distance between two Bernstein polynomials given their control points.
+
+    TODO Documentation
+
+    Parameters
+    ----------
+    cpts1 : TYPE
+        DESCRIPTION.
+    cpts2 : TYPE
+        DESCRIPTION.
+    cnt : TYPE, optional
+        DESCRIPTION. The default is 0.
+    alpha : TYPE, optional
+        DESCRIPTION. The default is np.inf.
+    maxIter : TYPE, optional
+        DESCRIPTION. The default is 10.
+
+    Returns
+    -------
+    alpha : TYPE
+        DESCRIPTION.
+
+    """
+    lb = pygjk(cpts1.T, cpts2.T)
+    if lb > eps:
+        return 0 # no col
+
+    else:
+        c1L = []
+        c1R = []
+        for row in cpts1:
+            left, right = deCasteljauSplit(row, 0.5)
+            c1L.append(left)
+            c1R.append(right[::-1])
+        c1L = np.array(c1L, dtype=float)
+        c1R = np.array(c1R, dtype=float)
+
+        c2L = []
+        c2R = []
+        for row in cpts2:
+            left, right = deCasteljauSplit(row, 0.5)
+            c2L.append(left)
+            c2R.append(right[::-1])
+        c2L = np.array(c2L, dtype=float)
+        c2R = np.array(c2R, dtype=float)
+
+        # c1L, c1R = deCasteljauSplit(cpts1, 0.5)
+        # c1R = c1R[::-1]
+        # c2L, c2R = deCasteljauSplit(cpts2, 0.5)
+        # c2R = c2R[::-1]
+
+        count += 1
+        alphaNew, t1New, t2New = _minDist(c1L, c2L, count=count, alpha=alpha,
+                                          t1_l=t1_l, t1_h=t1_l+0.5*t1len,
+                                          t2_l=t2_l, t2_h=t2_l+0.5*t2len)
+        if alphaNew < alpha:
+            alpha = alphaNew
+            tdiv1 = t1New
+            tdiv2 = t2New
+
+        alphaNew, t1New, t2New = _minDist(c1L, c2R, count=count, alpha=alpha,
+                                          t1_l=t1_l, t1_h=t1_l+0.5*t1len,
+                                          t2_l=t2_l+0.5*t2len, t2_h=t2_h)
+        if alphaNew < alpha:
+            alpha = alphaNew
+            tdiv1 = t1New
+            tdiv2 = t2New
+
+        alphaNew, t1New, t2New = _minDist(c1R, c2L, count=count, alpha=alpha,
+                                          t1_l=t1_l+0.5*t1len, t1_h=t1_h,
+                                          t2_l=t2_l, t2_h=t2_l+0.5*t2len)
+        if alphaNew < alpha:
+            alpha = alphaNew
+            tdiv1 = t1New
+            tdiv2 = t2New
+
+        alphaNew, t1New, t2New = _minDist(c1R, c2R, count=count, alpha=alpha,
+                                          t1_l=t1_l+0.5*t1len, t1_h=t1_h,
+                                          t2_l=t2_l+0.5*t2len, t2_h=t2_h)
+        if alphaNew < alpha:
+            alpha = alphaNew
+            tdiv1 = t1New
+            tdiv2 = t2New
+
+        return alpha, tdiv1, tdiv2
+
+
 # def _minDist(c1, c2, cnt=0, alpha=np.inf, eps=1e-9,
 #              t1_l=0, t1_h=1, t2_l=0, t2_h=1):
 #     """
@@ -1887,4 +1924,7 @@ if __name__ == '__main__':
 
     ax = c1.plot()
     c2.plot(ax)
+    pt1 = c1(10+10*t1)
+    pt2 = c2(10+10*t2)
+    ax.plot([pt1[0], pt2[0]], [pt1[1], pt2[1]])
     plt.show()
