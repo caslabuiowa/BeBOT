@@ -26,7 +26,7 @@ from polynomial.rationalbernstein import RationalBernstein
 # * Change cache values to reflect tf-t0 and use a hashtable lookup (in Base
 #   class)
 class Bernstein(Base):
-    """Bernstein polynomial class for trajectory generation
+    """Bernstein polynomial class for trajectory generation.
 
     Allows the user to construct a Bernstein (Bezier) polynomial of arbitrary
     dimension and degree.
@@ -622,7 +622,6 @@ class Bernstein(Base):
 
             return min(c1min, c2min)
 
-# TODO: fix max so that it behaves like min above
     def max(self, dim=0, globMax=-np.inf, tol=1e-6):
         """Returns the maximum value of the Bernstein polynomial in a single
         dimension
@@ -645,24 +644,23 @@ class Bernstein(Base):
             iterations is met.
         :rtype: float or None
         """
-        lb = self.cpts[dim, (0, -1)].min()
+        lb = self.cpts[dim, (0, -1)].max()
         if lb > globMax:
             globMax = lb
 
         maxIdx = self.cpts[dim, :].argmax()
-        newMax = max(self.cpts[dim, :])
+        ub = self.cpts[dim, maxIdx]
 
-        error = np.abs(globMax-newMax)
+        if ub - lb < tol:
+            return globMax
 
-        if error < tol:
-            return newMax
-        elif maxIdx != 0 and maxIdx != self.deg:
-            splitPoint = maxIdx / self.deg
-            c1, c2 = self.split(splitPoint)
-            c1max = c1.max(dim=dim, globMax=newMax, tol=tol)
-            c2max = c2.max(dim=dim, globMax=newMax, tol=tol)
+        else:
+            tdiv = (maxIdx/self.deg)*(self.tf - self.t0) + self.t0
+            c1, c2 = self.split(tdiv)
+            c1max = c1.max(dim=dim, globMax=globMax, tol=tol)
+            c2max = c2.max(dim=dim, globMax=globMax, tol=tol)
 
-            newMax = max((c1max, c2max))
+            newMax = max(c1max, c2max)
 
         return newMax
 
