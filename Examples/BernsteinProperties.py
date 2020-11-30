@@ -252,6 +252,58 @@ def extrema(c1, c2):
           f'over {niter} iterations: {trun} s')
 
 
+def spatialDistance(c1, c2):
+    minDist, t1, t2 = c1.minDist(c2)
+    print(f'Minimum distance between curves is {minDist}')
+    ax = c1.plot()
+    c2.plot(ax)
+
+    ax.plot([c1(t1)[0], c2(t2)[0]], [c1(t1)[1], c2(t2)[1]], 'r.-', label='Minimum Distance Vector')
+    ax.legend()
+
+    niter, trun = timeit.Timer(lambda: c1.minDist(c2)).autorange()
+    print(f'Average time to run "c1.minDist(c2)" over {niter} iterations: {trun/niter} s')
+
+
+def collisionDetection(c1, c2, c3):
+    """
+    Determine whether the curves collide with each other.
+
+    If there is not a collision, collCheck returns 0. If a collision is possible, it will return 1.
+
+    Parameters
+    ----------
+    c1 : Bernstein
+        DESCRIPTION.
+    c2 : Bernstein
+        DESCRIPTION.
+    c3 : Bernstein
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    res = c1.collCheck(c2)
+    print(f'Collision between c1 and c2: {res}')
+
+    niter, trun = timeit.Timer(lambda: c1.collCheck(c2)).autorange()
+    print(f'Runtime: {trun/niter} s')
+
+    res = c1.collCheck(c3)
+    print(f'Collision between c1 and c3: {res}')
+
+    niter, trun = timeit.Timer(lambda: c1.collCheck(c3)).autorange()
+    print(f'Runtime: {trun/niter} s')
+
+    res = c2.collCheck(c3)
+    print(f'Collision between c2 and c3: {res}')
+
+    niter, trun = timeit.Timer(lambda: c2.collCheck(c3)).autorange()
+    print(f'Runtime: {trun/niter} s')
+
+
 if __name__ == '__main__':
     # Creates a Figures directory if it doesn't already exist
     if SAVE_FIG:
@@ -262,11 +314,13 @@ if __name__ == '__main__':
     # Define control points as numpy arrays. Be sure to set the dtype to float.
     cpts1 = np.array([[0, 1, 2, 3, 4, 5], [5, 0, 2, 5, 7, 5]], dtype=float)
     cpts2 = np.array([[0, 2, 4, 6, 8, 10], [3, 7, 3, 5, 8, 9]], dtype=float)
+    cpts3 = cpts1 + np.array([0, 8])[:, np.newaxis]
     t0 = 10  # Initial time
     tf = 20  # Final time
 
     c1 = Bernstein(cpts1, t0=t0, tf=tf)
     c2 = Bernstein(cpts2, t0=t0, tf=tf)
+    c3 = Bernstein(cpts3, t0=0, tf=1)
 
     # =========================================================================
     # Examples of Bernstein polynomial properties
@@ -308,7 +362,21 @@ if __name__ == '__main__':
     arithmetic(c1, c2)
     print('---')
 
-    # Algorithm 3.2 - Evaluating Extrema
+    # =========================================================================
+    # Examples of Bernstein polynomial algorithms
+    # =========================================================================
+
+    # Algorithm 1 - Evaluating Extrema
     print('Evaluating Extrema')
     extrema(c1, c2)
+    print('---')
+
+    # Algorithm 2 - Minimum Spatial Distance
+    print('Minimum Spatial Distance')
+    spatialDistance(c2, c3)
+    print('---')
+
+    # Algorithm 3 - Collision Detection
+    print('Collision Detection')
+    collisionDetection(c1, c2, c3)
     print('---')
