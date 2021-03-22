@@ -4,9 +4,11 @@
 
 """
 
+import pytest
 import numpy as np
 import random as random
 from polynomial.bernstein import Bernstein
+
 
 # test for end points property
 def endPointsProperty(t1, t2, t3):
@@ -22,6 +24,8 @@ def endPointsProperty(t1, t2, t3):
 def applyTests(figures, expectation):
     assert figures == expectation
 
+#The following is time limit, second in bracket.
+#@pytest.mark.timeout(0.001)  
 def test_endPoint():
     
     # test case 1
@@ -99,7 +103,7 @@ def test_endPoint():
     print("t_01 " + str(t_01) + " t_f1 " + str(t_f1))
     print("t_02 " + str(t_02) + " t_f2 " + str(t_f2))
     print("t_03 " + str(t_03) + " t_f3 " + str(t_f3))
-    
+  
 if __name__ == '__main__':
     
     #run tests

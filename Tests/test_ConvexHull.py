@@ -4,6 +4,7 @@ Created on Sat Mar  6 13:42:53 2021
 @author: ckielasjensen, Yiqing Gu
 """
 
+import pytest
 from scipy.spatial import ConvexHull
 from scipy.spatial import Delaunay
 
@@ -35,7 +36,8 @@ def in_hull(points, hull):
         
         assert result.all() == np.full((len(result),2), True, dtype = bool).all()
 
-
+#The following is time limit, second in bracket.
+#@pytest.mark.timeout(0.001)  
 # test cases
 def test_convexHull():
     
@@ -97,7 +99,8 @@ def test_convexHull():
     print(testPoints)
     
     in_hull(testPoints, testCase)
-    
+
+
 if __name__ == '__main__':
     
     #run tests
