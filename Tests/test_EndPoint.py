@@ -24,8 +24,11 @@ def endPointsProperty(t1, t2, t3):
 def applyTests(figures, expectation):
     assert figures == expectation
 
-#The following is time limit, second in bracket.
+#the following is time limit, second in bracket.
 #@pytest.mark.timeout(0.001)  
+#reference: https://pypi.org/project/pytest-timeout/
+
+# test cases
 def test_endPoint():
     
     # test case 1

@@ -36,8 +36,10 @@ def in_hull(points, hull):
         
         assert result.all() == np.full((len(result),2), True, dtype = bool).all()
 
-#The following is time limit, second in bracket.
+#the following is time limit, second in bracket.
 #@pytest.mark.timeout(0.001)  
+#reference: https://pypi.org/project/pytest-timeout/
+
 # test cases
 def test_convexHull():
     
