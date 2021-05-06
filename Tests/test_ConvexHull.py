@@ -33,21 +33,25 @@ def in_hull(points, hull):
         result = hull.find_simplex(points)>=0
         print(result)
         
-        assert result.all() == np.full((len(result),2), True, dtype = bool).all()
+        # create a true array, to check whehter all points locate in convex hull
+        correctness = np.full((len(result),2), True, dtype = bool)
+        
+        assert result.all() == correctness.all()
 
 # test cases
 def test_convexHull1():
     
+    # conpo = control points
     # test case 1 (fixed points)
-    critical_points1 = np.array([[0, 0, 5, 5],
+    conpo1 = np.array([[0, 0, 5, 5],
                       [0, 3.3, 6.7, 10]], dtype=float)
-    critical_points2 = np.array([[5, 5, 10, 10],
+    conpo2 = np.array([[5, 5, 10, 10],
                       [0, 3.3, 6.7, 10]], dtype=float)
-    critical_points3 = np.array([[10, 10, 0, 0],
+    conpo3 = np.array([[10, 10, 0, 0],
                       [0, 4.4, 5.6, 10]], dtype=float)
-    trajectory1 = Bernstein(critical_points1, t0=0, tf=93)
-    trajectory2 = Bernstein(critical_points2, t0=0, tf=93)
-    trajectory3 = Bernstein(critical_points3, t0=0, tf=124)
+    trajectory1 = Bernstein(conpo1, t0=0, tf=93)
+    trajectory2 = Bernstein(conpo2, t0=0, tf=93)
+    trajectory3 = Bernstein(conpo3, t0=0, tf=124)
     testCase = convexHullProperty(trajectory1, trajectory2, trajectory3)
     testPoints = np.array([(1,1), (2, 2)])
     
@@ -56,15 +60,15 @@ def test_convexHull1():
 def test_convexHull2():
     
     #test case 2 (random points for checking, might cause error)
-    critical_points1 = np.array([[0, 0, 5, 5],
+    conpo1 = np.array([[0, 0, 5, 5],
                       [0, 3.3, 6.7, 10]], dtype=float)
-    critical_points2 = np.array([[5, 5, 10, 10],
+    conpo2 = np.array([[5, 5, 10, 10],
                       [0, 3.3, 6.7, 10]], dtype=float)
-    critical_points3 = np.array([[10, 10, 0, 0],
+    conpo3 = np.array([[10, 10, 0, 0],
                       [0, 4.4, 5.6, 10]], dtype=float)
-    trajectory1 = Bernstein(critical_points1, t0=0, tf=93)
-    trajectory2 = Bernstein(critical_points2, t0=0, tf=93)
-    trajectory3 = Bernstein(critical_points3, t0=0, tf=124)
+    trajectory1 = Bernstein(conpo1, t0=0, tf=93)
+    trajectory2 = Bernstein(conpo2, t0=0, tf=93)
+    trajectory3 = Bernstein(conpo3, t0=0, tf=124)
     testCase = convexHullProperty(trajectory1, trajectory2, trajectory3)
     testPoints = np.random.randint(0, 10, size=(10, 2))
     print("Test points")
@@ -75,11 +79,11 @@ def test_convexHull2():
 def test_convexHull3():
     
     #test case 3 (random points and random time interval, might cause error)
-    critical_points1 = np.array([[0, 0, 5, 5],
+    conpo1 = np.array([[0, 0, 5, 5],
                       [0, 3.3, 6.7, 10]], dtype=float)
-    critical_points2 = np.array([[5, 5, 10, 10],
+    conpo2 = np.array([[5, 5, 10, 10],
                       [0, 3.3, 6.7, 10]], dtype=float)
-    critical_points3 = np.array([[10, 10, 0, 0],
+    conpo3 = np.array([[10, 10, 0, 0],
                       [0, 4.4, 5.6, 10]], dtype=float)
     t_01=random.randint(0, 50)
     t_f1=random.randint(55, 100)
@@ -87,9 +91,9 @@ def test_convexHull3():
     t_f2=random.randint(55, 100)
     t_03=random.randint(0, 50)
     t_f3=random.randint(55, 100)
-    trajectory1 = Bernstein(critical_points1, t0=t_01, tf=t_f1)
-    trajectory2 = Bernstein(critical_points2, t0=t_02, tf=t_f2)
-    trajectory3 = Bernstein(critical_points3, t0=t_03, tf=t_f3)
+    trajectory1 = Bernstein(conpo1, t0=t_01, tf=t_f1)
+    trajectory2 = Bernstein(conpo2, t0=t_02, tf=t_f2)
+    trajectory3 = Bernstein(conpo3, t0=t_03, tf=t_f3)
     testCase = convexHullProperty(trajectory1, trajectory2, trajectory3)
     testPoints = np.random.randint(0, 10, size=(20, 2))
     print("Random time")

@@ -27,13 +27,13 @@ if __name__ == '__main__':
     
     speedSquaredCheck(c1)
     
+    # conpo = control points
     # random end points from 0 to 10 and random time interval
-    critical_points1 = np.array([[random.randint(0, 10), random.randint(0, 10), random.randint(0, 10), random.randint(0, 10)],
-                      [random.randint(0, 10), random.randint(0, 10), random.randint(0, 10), random.randint(0, 10)]], dtype=float)
-    print(critical_points1)
+    conpo = np.array(np.random.randint(0,10,size=(2,4)), dtype=float)
+    print(conpo)
     t_01=random.randint(0, 30)
     t_f1=random.randint(40, 60)
-    trajectory1 = Bernstein(critical_points1, t0=t_01, tf=t_f1)
+    trajectory1 = Bernstein(conpo, t0=t_01, tf=t_f1)
     
     speedSquaredCheck(trajectory1)
     
