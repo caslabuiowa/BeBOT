@@ -34,5 +34,28 @@ def saveFigs(figDir='Figures', figFormat='svg', dpi=1200):
     print('Done saving figures')
 
 
+def setRCParams():
+    # Run this to make sure that the matplotlib plots have the correct font type
+    # for an IEEE publication. Also sets font sizes and line widths for easier
+    # viewing.
+    plt.rcParams.update({
+                'font.size': 32,
+                'pdf.fonttype': 42,
+                'ps.fonttype': 42,
+                'figure.titlesize': 32,
+                'legend.fontsize': 24,
+                'xtick.labelsize': 24,
+                'ytick.labelsize': 24,
+                'lines.linewidth': 4,
+                'lines.markersize': 18,
+                'figure.figsize': [13.333, 10]
+                })
+
+
+def resetRCParams():
+    # Reset the matplotlib parameters
+    plt.rcParams.update(plt.rcParamsDefault)
+
+
 if __name__ == '__main__':
     pass

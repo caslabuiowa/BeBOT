@@ -494,7 +494,7 @@ if __name__ == '__main__':
 
     plotConstraints(trajs, params)
 
-    saveFigs('ATCSpatial_Figures', figFormat='eps')
+    saveFigs('ATCSpatial_Figures', figFormat='svg')
 
     plt.show()
     resetRCParams()
