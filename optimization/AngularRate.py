@@ -25,7 +25,7 @@ def angularRate(bp, elev=DEG_ELEV):
     num = yddot*xdot - xddot*ydot
     den = xdot*xdot + ydot*ydot
     try:
-        cpts = (num*num).elev(elev).cpts / (den*den).elev(elev).cpts
+        cpts = num.elev(elev).cpts / den.elev(elev).cpts
     except TypeError as e:
         print(f'bp: {bp}')
         print(f'num: {num}')

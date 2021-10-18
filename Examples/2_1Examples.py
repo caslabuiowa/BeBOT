@@ -13,6 +13,7 @@ from scipy.spatial import ConvexHull
 
 from polynomial.bernstein import Bernstein
 from polynomial.rationalbernstein import RationalBernstein
+from utils import setRCParams, resetRCParams, saveFigs
 
 
 SAVE_FIG = True         # Set to True to save figures
@@ -23,28 +24,28 @@ XLIM = [-0.5, 12.5]
 YLIM = [-0.5, 12.5]
 
 
-def setRCParams():
-    # Run this to make sure that the matplotlib plots have the correct font type
-    # for an IEEE publication. Also sets font sizes and line widths for easier
-    # viewing.
-    plt.rcParams.update({
-                'font.size': 32,
-                'pdf.fonttype': 42,
-                'ps.fonttype': 42,
-                'figure.titlesize': 32,
-                'legend.fontsize': 24,
-                'xtick.labelsize': 24,
-                'ytick.labelsize': 24,
-                'lines.linewidth': 4,
-                'lines.markersize': 18,
-                'figure.figsize': [13.333, 10]
-                })
-    # plt.tight_layout()
+# def setRCParams():
+#     # Run this to make sure that the matplotlib plots have the correct font type
+#     # for an IEEE publication. Also sets font sizes and line widths for easier
+#     # viewing.
+#     plt.rcParams.update({
+#                 'font.size': 32,
+#                 'pdf.fonttype': 42,
+#                 'ps.fonttype': 42,
+#                 'figure.titlesize': 32,
+#                 'legend.fontsize': 24,
+#                 'xtick.labelsize': 24,
+#                 'ytick.labelsize': 24,
+#                 'lines.linewidth': 4,
+#                 'lines.markersize': 18,
+#                 'figure.figsize': [13.333, 10]
+#                 })
+#     # plt.tight_layout()
 
 
-def resetRCParams():
-    # Reset the matplotlib parameters
-    plt.rcParams.update(plt.rcParamsDefault)
+# def resetRCParams():
+#     # Reset the matplotlib parameters
+#     plt.rcParams.update(plt.rcParamsDefault)
 
 
 def initialPlot(c1, c2, obs):
@@ -248,28 +249,28 @@ def plotCvxHull(cpts, ax):
         ax.plot(cpts[0, simplex], cpts[1, simplex], 'k:')
 
 
-def saveFigs():
-    import os
-    # Create a Figures directory if it doesn't already exist
-    if not os.path.isdir(FIG_DIR):
-        os.mkdir(FIG_DIR)
+# def saveFigs():
+#     import os
+#     # Create a Figures directory if it doesn't already exist
+#     if not os.path.isdir(FIG_DIR):
+#         os.mkdir(FIG_DIR)
 
-    for i in plt.get_fignums():
-        fig = plt.figure(i)
-        ax = fig.get_axes()[0]
-        title = ax.get_title()
-        print(f'Saving figure {i} - {title}')
+#     for i in plt.get_fignums():
+#         fig = plt.figure(i)
+#         ax = fig.get_axes()[0]
+#         title = ax.get_title()
+#         print(f'Saving figure {i} - {title}')
 
-        ax.set_title('')
-        plt.tight_layout()
-        plt.draw()
-        saveName = os.path.join(FIG_DIR, title.replace(' ', '_') + '.' + FIG_FORMAT)
-        fig.savefig(saveName, format=FIG_FORMAT, dpi=FIG_DPI)
-        ax.set_title(title)
-        plt.tight_layout()
-        plt.draw()
+#         ax.set_title('')
+#         plt.tight_layout()
+#         plt.draw()
+#         saveName = os.path.join(FIG_DIR, title.replace(' ', '_') + '.' + FIG_FORMAT)
+#         fig.savefig(saveName, format=FIG_FORMAT, dpi=FIG_DPI)
+#         ax.set_title(title)
+#         plt.tight_layout()
+#         plt.draw()
 
-    print('Done saving figures')
+#     print('Done saving figures')
 
 
 if __name__ == '__main__':
