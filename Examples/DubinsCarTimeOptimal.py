@@ -238,8 +238,8 @@ def nonlcon(x, params):
 
     maxSpeed = params.vmax**2 - speed(traj)
     angRate = angularRate(traj)
-    angRateMax = params.wmax - angRate
-    angRateMin = angRate + params.wmax
+    angRateMax = params.wmax**2 - angRate #params.wmax - angRate
+    angRateMin = [0] #angRate + params.wmax
     separation = obstacleAvoidance([traj], params.obstacles, elev=params.degElev) - params.dsafe**2
 
     return np.concatenate([maxSpeed, angRateMax, angRateMin, separation])
@@ -408,6 +408,7 @@ if __name__ == '__main__':
         cons = [{'type': 'ineq',
                  'fun': lambda x: nonlcon(x, params)}]
 
+        tstart = time.time()
         # Call the optimizer
         results = minimize(cost, x0,
                            constraints=cons,
@@ -416,6 +417,7 @@ if __name__ == '__main__':
                            options={'maxiter': 250,
                                     'disp': True,
                                     'iprint': 1})
+        print(f'Computation time: {time.time()-tstart}')
 
         # Plot everything
         y, tf = reshape(results.x, params.deg, params.inipt, params.finalpt, params.inispeed,
