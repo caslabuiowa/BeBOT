@@ -16,7 +16,8 @@ from polynomial.rationalbernstein import RationalBernstein
 
 
 SAVE_FIG = True         # Set to True to save figures
-FIG_FORMAT = 'svg'      # Used for the output format when saving figures
+FIG_FORMAT = 'eps'      # Used for the output format when saving figures
+FIG_DPI = 1200          # Dots per inch for output figure
 FIG_DIR = 'Figures'     # Directory in which to save the figures
 XLIM = [-0.5, 12.5]
 YLIM = [-0.5, 12.5]
@@ -263,7 +264,7 @@ def saveFigs():
         plt.tight_layout()
         plt.draw()
         saveName = os.path.join(FIG_DIR, title.replace(' ', '_') + '.' + FIG_FORMAT)
-        fig.savefig(saveName, format=FIG_FORMAT)
+        fig.savefig(saveName, format=FIG_FORMAT, dpi=FIG_DPI)
         ax.set_title(title)
         plt.tight_layout()
         plt.draw()

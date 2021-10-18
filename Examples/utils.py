@@ -10,7 +10,7 @@ import os
 import matplotlib.pyplot as plt
 
 
-def saveFigs(figDir='Figures', figFormat='svg'):
+def saveFigs(figDir='Figures', figFormat='svg', dpi=1200):
     # Create a Figures directory if it doesn't already exist
     if not os.path.isdir(figDir):
         os.mkdir(figDir)
@@ -27,7 +27,7 @@ def saveFigs(figDir='Figures', figFormat='svg'):
         plt.tight_layout()
         plt.draw()
         saveName = os.path.join(figDir, title.replace(' ', '_') + '.' + figFormat)
-        fig.savefig(saveName, format=figFormat)
+        fig.savefig(saveName, format=figFormat, dpi=dpi)
         ax.set_title(title)
         plt.draw()
 
