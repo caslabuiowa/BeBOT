@@ -26,13 +26,13 @@ Calvin Kielas-Jensen, Venanzio Cichella, Thomas Berry, Isaac Kaminer, Claire Wal
 
 BibTex entry:
 
-@article{kielas2022bernstein,
-  title={Bernstein Polynomial-Based Method for Solving Optimal Trajectory Generation Problems},
-  author={Kielas-Jensen, Calvin and Cichella, Venanzio and Berry, Thomas and Kaminer, Isaac and Walton, Claire and Pascoal, Antonio},
-  journal={Sensors},
-  volume={22},
-  number={5},
-  pages={1869},
-  year={2022},
-  publisher={Multidisciplinary Digital Publishing Institute}
-}
+@article{kielas2022bernstein,  
+  title={Bernstein Polynomial-Based Method for Solving Optimal Trajectory Generation Problems},  
+  author={Kielas-Jensen, Calvin and Cichella, Venanzio and Berry, Thomas and Kaminer, Isaac and Walton, Claire and Pascoal, Antonio},  
+  journal={Sensors},  
+  volume={22},  
+  number={5},  
+  pages={1869},  
+  year={2022},  
+  publisher={Multidisciplinary Digital Publishing Institute}  
+}  
