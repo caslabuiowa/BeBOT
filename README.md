@@ -18,3 +18,21 @@ Nonlinear programming problems are a specific formulation where the goal is to m
 People have been converting problems into different forms for millennia. You could use geometry to find an unknown value on a shape or you could represent the shape using algebra and solve for the unknown value and reach the same conclusion. To convert the trajectory generation OCP into an NLP problem, you could simply represent the trajectory as a series of many points. The NLP solver would then need to tweak each one of those points in order to minimize the given function while adhering to the constraints. Increasing the number of points quickly makes the problem impossible for even the most powerful computers to solve but you might need many points to ensure safety and feasibility. A clever way to reduce the number of points is to instead represent the path as a polynomial. We could potentially create the same path represented by thousands of points by simply changing the coefficients A, B, and C in the equation f(x) = A*x^2 + B*x + C. There are different polynomial bases such as Legendre, Hermite, or in the last example, monomial. This work will use the Bernstein basis.
 
 Bernstein polynomials were originally created by Sergei Natanovich Bernstein in 1912 but their modern form and popularity did not rise until the 1960’s when two French engineers, Paul de Faget de Casteljau and Pierre Étienne Bézier, employed at competing auto manufacturers used them for representing auto body shapes. Bernstein polynomials, frequently called Bézier curves, provide an intuitive way to build and modify a curved line. If you have ever used the spline tool in a vector graphics program like Adobe Illustrator, you likely used Bernstein polynomials. These polynomials provide many useful properties such as needing few points to represent a useful trajectory and making important mathematical computations very efficient. These properties make them an excellent choice for converting the OCP into an NLP problem since they reduce the computation time needed while still guaranteeing safety in continuous time, which is often not possible using other methods.
+
+# How to acknowledge this work
+We hope that you find this software useful and we would like to hear your feedback. We have put a great deal of time and effort into BeBOT's development. Please, cite the following publication if you are using BeBOT for your own research:
+
+Calvin Kielas-Jensen, Venanzio Cichella, Thomas Berry, Isaac Kaminer, Claire Walton, and Antonio Pascoal. "Bernstein Polynomial-Based Method for Solving Optimal Trajectory Generation Problems." Sensors 22, no. 5 (2022): 1869.
+
+BibTex entry:
+
+@article{kielas2022bernstein,
+  title={Bernstein Polynomial-Based Method for Solving Optimal Trajectory Generation Problems},
+  author={Kielas-Jensen, Calvin and Cichella, Venanzio and Berry, Thomas and Kaminer, Isaac and Walton, Claire and Pascoal, Antonio},
+  journal={Sensors},
+  volume={22},
+  number={5},
+  pages={1869},
+  year={2022},
+  publisher={Multidisciplinary Digital Publishing Institute}
+}
