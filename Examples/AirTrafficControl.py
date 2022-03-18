@@ -9,6 +9,7 @@ Created on Mon May 18 18:37:34 2020
 from cartopy import crs
 from cartopy.io.shapereader import natural_earth, Reader
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 from numba import njit
 import numpy as np
 from scipy.optimize import minimize, Bounds
@@ -330,16 +331,22 @@ def plotConstraints(trajs, params):
     speedAx.set_xlabel('Time (hr)')
     speedAx.set_ylabel(r'Squared Speed $\left(\frac{m}{s}\right)^2$')
     speedAx.set_title('Speed Constraints')
+    speedAx.xaxis.set_major_formatter(FuncFormatter(lambda x, p: format(int(x), ',')))
+    speedAx.yaxis.set_major_formatter(FuncFormatter(lambda x, p: format(int(x), ',')))
     # angRateAx.set_xlim(XLIM)
     angRateAx.legend()
     angRateAx.set_xlabel('Time (hr)')
     angRateAx.set_ylabel(r'Angular Velocity $\left( \frac{rad}{s} \right)$')
     angRateAx.set_title('Angular Velocity Constraints')
+    angRateAx.xaxis.set_major_formatter(FuncFormatter(lambda x, p: format(int(x), ',')))
+    angRateAx.yaxis.set_major_formatter(FuncFormatter(lambda x, p: format(int(x), ',')))
     # distAx.set_xlim(XLIM)
     distAx.legend()
     distAx.set_xlabel('Time (hr)')
     distAx.set_ylabel(r'Squared Euclidean Distance $km^2$')
     distAx.set_title('Distance Constraints')
+    distAx.xaxis.set_major_formatter(FuncFormatter(lambda x, p: format(int(x), ',')))
+    distAx.yaxis.set_major_formatter(FuncFormatter(lambda x, p: format(int(x), ',')))
 
 
 def drawUS(cities):
@@ -476,13 +483,13 @@ if __name__ == '__main__':
         [-80.1918, 25.7617],    # Miami
         [-104.9903, 39.7392]    # Denver
         ]
-    ax = drawUS(cities)
-    for i, traj in enumerate(trajs):
-        # Not plotting the last point due to a bug in matplotlib/cartopy
-        ax.plot(traj.curve[0, :-1], traj.curve[1, :-1], label=f'Vehicle {i+1}', transform=crs.GOOGLE_MERCATOR)
-    ax.legend()
-    ax.set_title('Flight Trajectories')
-    # ax.name = 'cartopy'  # Needed due to a bug in matplotlib/cartopy
+    # ax = drawUS(cities)
+    # for i, traj in enumerate(trajs):
+    #     # Not plotting the last point due to a bug in matplotlib/cartopy
+    #     ax.plot(traj.curve[0, :-1], traj.curve[1, :-1], label=f'Vehicle {i+1}', transform=crs.GOOGLE_MERCATOR)
+    # ax.legend()
+    # ax.set_title('Flight Trajectories')
+    # # ax.name = 'cartopy'  # Needed due to a bug in matplotlib/cartopy
 
     plotConstraints(trajs, params)
 

@@ -19,6 +19,7 @@ from scipy.optimize import minimize, Bounds
 # import bezier as bez
 from polynomial.bernstein import Bernstein
 from constants import DEG_ELEV
+from utils import setRCParams, resetRCParams, saveFigs
 
 
 class Parameters:
@@ -302,15 +303,7 @@ def plot_obstacles(obstacles, ax, params):
 
 if __name__ == '__main__':
     plt.close('all')
-    plt.rcParams.update({
-            'font.size': 40,
-            'pdf.fonttype': 42,
-            'ps.fonttype': 42,
-            'xtick.labelsize': 40,
-            'ytick.labelsize': 40,
-            'lines.linewidth': 4,
-            'lines.markersize': 18
-            })
+    setRCParams()
 
     # results, params = main()
 
@@ -361,9 +354,10 @@ if __name__ == '__main__':
                   [curve.cpts[2, -1]],
                   'k.', markersize=40)
 
-    y = reshape(results.x, params.nveh, params.deg, params.iniPts,
-                    params.finalPts)
-    trajs = build_traj_list(y, params)
+    # y = reshape(results.x, params.nveh, params.deg, params.iniPts,
+    #                 params.finalPts)
+    # trajs = build_traj_list(y, params)
 
     plt.show()
     # last run, 10184.20985 seconds (7/29/2020)
+    resetRCParams()
