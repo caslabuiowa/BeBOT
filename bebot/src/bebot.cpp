@@ -6,10 +6,13 @@ using namespace bebot;
 
 BeBOT::BeBOT(const Eigen::Ref<Eigen::MatrixXd>& cpts) {
     set_cpts(cpts);
+    set_t0(0.0);
+    set_tf(1.0);
 }
 
 BeBOT::BeBOT(const Eigen::Ref<Eigen::MatrixXd>& cpts, const double tf) {
     set_cpts(cpts);
+    set_t0(0.0);
     set_tf(tf);
 }
 
