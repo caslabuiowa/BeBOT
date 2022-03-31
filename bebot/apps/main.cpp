@@ -14,5 +14,12 @@ int main() {
     bebot::BeBOT c(cpts);
 
     cout << cpts << endl << "---" << endl;
+    cout << c.get_cpts() << endl << "---" << endl;
+
+    Eigen::MatrixXd new_cpts{
+        {0, 1, 2},
+        {3, 4, 2}
+    };
+    c.set_cpts(new_cpts);
     cout << c.get_cpts() << endl;
 }
