@@ -1,6 +1,4 @@
-#include <bebot/bebot.hpp>
-#include <Eigen/Dense>
-#include <iostream>
+#include "bebot.hpp"
 
 using namespace bebot;
 
