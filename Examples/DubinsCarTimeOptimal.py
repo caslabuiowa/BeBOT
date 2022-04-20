@@ -17,32 +17,35 @@ from optimization.AngularRate import angularRate
 from optimization.Speed import speed
 from optimization.ObstacleAvoidance import obstacleAvoidance
 from polynomial.bernstein import Bernstein
+from utils import setRCParams, resetRCParams, saveFigs
 
 
 FIG_DIR = 'Figures/Dubins'
 FIG_FORMAT = 'svg'
 
 
-def setRCParams():
-    # Run this to make sure that the matplotlib plots have the correct font type
-    # for an IEEE publication. Also sets font sizes and line widths for easier
-    # viewing.
-    plt.rcParams.update({
-                'font.size': 40,
-                'pdf.fonttype': 42,
-                'ps.fonttype': 42,
-                'xtick.labelsize': 40,
-                'ytick.labelsize': 40,
-                'lines.linewidth': 4,
-                'lines.markersize': 18,
-                'figure.figsize': [13.333, 10]
-                })
-    # plt.tight_layout()
+# def setRCParams():
+#     # Run this to make sure that the matplotlib plots have the correct font type
+#     # for an IEEE publication. Also sets font sizes and line widths for easier
+#     # viewing.
+#     plt.rcParams.update({
+#                 'font.size': 32,
+#                 'pdf.fonttype': 42,
+#                 'ps.fonttype': 42,
+#                 'figure.titlesize': 32,
+#                 'legend.fontsize': 24,
+#                 'xtick.labelsize': 24,
+#                 'ytick.labelsize': 24,
+#                 'lines.linewidth': 4,
+#                 'lines.markersize': 18,
+#                 'figure.figsize': [13.333, 10]
+#                 })
+#     # plt.tight_layout()
 
 
-def resetRCParams():
-    # Reset the matplotlib parameters
-    plt.rcParams.update(plt.rcParamsDefault)
+# def resetRCParams():
+#     # Reset the matplotlib parameters
+#     plt.rcParams.update(plt.rcParamsDefault)
 
 
 def animateTrajectory(trajectories):
@@ -238,7 +241,7 @@ def nonlcon(x, params):
 
     maxSpeed = params.vmax**2 - speed(traj)
     angRate = angularRate(traj)
-    angRateMax = params.wmax - angRate
+    angRateMax = params.wmax - angRate #params.wmax - angRate
     angRateMin = angRate + params.wmax
     separation = obstacleAvoidance([traj], params.obstacles, elev=params.degElev) - params.dsafe**2
 
@@ -339,27 +342,27 @@ def plotConstraints(trajs, params, legNames):
     angRateAx.set_title('Angular Velocity Constraints')
 
 
-def saveFigs():
-    import os
-    # Create a Figures directory if it doesn't already exist
-    if not os.path.isdir(FIG_DIR):
-        os.mkdir(FIG_DIR)
+# def saveFigs():
+#     import os
+#     # Create a Figures directory if it doesn't already exist
+#     if not os.path.isdir(FIG_DIR):
+#         os.mkdir(FIG_DIR)
 
-    for i in plt.get_fignums():
-        fig = plt.figure(i)
-        ax = fig.get_axes()[0]
-        title = ax.get_title()
-        print(f'Saving figure {i} - {title}')
+#     for i in plt.get_fignums():
+#         fig = plt.figure(i)
+#         ax = fig.get_axes()[0]
+#         title = ax.get_title()
+#         print(f'Saving figure {i} - {title}')
 
-        ax.set_title('')
-        plt.tight_layout()
-        plt.draw()
-        saveName = os.path.join(FIG_DIR, title.replace(' ', '_') + '.' + FIG_FORMAT)
-        fig.savefig(saveName, format=FIG_FORMAT)
-        ax.set_title(title)
-        plt.draw()
+#         ax.set_title('')
+#         plt.tight_layout()
+#         plt.draw()
+#         saveName = os.path.join(FIG_DIR, title.replace(' ', '_') + '.' + FIG_FORMAT)
+#         fig.savefig(saveName, format=FIG_FORMAT)
+#         ax.set_title(title)
+#         plt.draw()
 
-    print('Done saving figures')
+#     print('Done saving figures')
 
 
 class Parameters:
@@ -408,6 +411,7 @@ if __name__ == '__main__':
         cons = [{'type': 'ineq',
                  'fun': lambda x: nonlcon(x, params)}]
 
+        tstart = time.time()
         # Call the optimizer
         results = minimize(cost, x0,
                            constraints=cons,
@@ -416,6 +420,7 @@ if __name__ == '__main__':
                            options={'maxiter': 250,
                                     'disp': True,
                                     'iprint': 1})
+        print(f'Computation time: {time.time()-tstart}')
 
         # Plot everything
         y, tf = reshape(results.x, params.deg, params.inipt, params.finalpt, params.inispeed,
@@ -442,7 +447,7 @@ if __name__ == '__main__':
 
     plotConstraints(trajs, params, legNames)
 
-    saveFigs()
+    saveFigs(FIG_DIR)
 
     plt.show()
     resetRCParams()
