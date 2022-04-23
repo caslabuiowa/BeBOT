@@ -1,4 +1,4 @@
-#include "bebot.hpp"
+#include "bebot/bebot.hpp"
 
 using namespace bebot;
 

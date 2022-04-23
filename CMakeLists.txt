@@ -16,11 +16,10 @@ project(
     LANGUAGES CXX
     DESCRIPTION "BeBOT Library.")
 
-#add_subdirectory(src)
-add_library(bebot src/bebot.cpp)
+add_subdirectory(src)
+set (CMAKE_CXX_STANDARD 17)
 
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-target_link_libraries(bebot Eigen3::Eigen)
+include_directories(include/bebot)
 
 add_executable(main apps/main.cpp)
 target_include_directories(main PRIVATE src)

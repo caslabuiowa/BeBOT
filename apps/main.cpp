@@ -1,8 +1,8 @@
-#include "bebot.hpp"
+#include <bebot.hpp>
 #include <Eigen/Dense>
 #include <iostream>
 
-using namespace std;
+// using namespace std;
 
 int main() {
     Eigen::MatrixXd cpts{
@@ -13,13 +13,13 @@ int main() {
 
     bebot::BeBOT c(cpts);
 
-    cout << cpts << endl << "---" << endl;
-    cout << c.get_cpts() << endl << "---" << endl;
+    std::cout << cpts << std::endl << "---" << std::endl;
+    std::cout << c.get_cpts() << std::endl << "---" << std::endl;
 
     Eigen::MatrixXd new_cpts{
         {0, 1, 2},
         {3, 4, 2}
     };
     c.set_cpts(new_cpts);
-    cout << c.get_cpts() << endl;
+    std::cout << c.get_cpts() << std::endl;
 }
