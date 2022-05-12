@@ -1,25 +1,17 @@
-#include <bebot/bernstein.hpp>
+#include "bebot/bernstein.hpp"
+#include "bebot/algorithm.hpp"
+
 #include <exception>
+#include <iterator>
 #include <numeric>
 #include <utility>
 #include <algorithm>
+#include <vector>
 
 using namespace bebot::bernstein;
 
 namespace
 {
-
-Eigen::MatrixXd deCasteljau_1d(Eigen::MatrixXd control_points, std::vector<double> t)
-{
-    Eigen::MatrixXd curve{ { 1, 2, 3 }, { 4, 5, 6 } };
-    return curve;
-}
-
-Eigen::MatrixXd deCasteljau_Nd(Eigen::MatrixXd control_points, std::vector<double> t)
-{
-    Eigen::MatrixXd curve{ { 1, 2, 3 }, { 4, 5, 6 } };
-    return curve;
-}
 
 std::pair<Bernstein, Bernstein> temporally_align(Bernstein bernstein_1, Bernstein bernstein_2)
 {
@@ -32,19 +24,8 @@ std::pair<Bernstein, Bernstein> temporally_align(Bernstein bernstein_1, Bernstei
 double binom(int n, int k)
 {
     // Stolen from cppreference :P
+    // TODO: No idea how efficient this is
     return 1 / ((n + 1) * std::beta(n - k + 1, k + 1));
-}
-
-std::vector<int> range(int start, int end)
-{
-    std::vector<int> out(end - start);
-    std::iota(out.begin(), out.end(), start);
-    return out;
-}
-
-std::vector<int> range(int end)
-{
-    return range(0, end);
 }
 
 Eigen::MatrixXd bezier_coefficients(int n)
@@ -57,20 +38,6 @@ Eigen::MatrixXd bezier_coefficients(int n)
     }
     return coefficients;
 }
-
-// Eigen::MatrixXd bezier_product_matrix(int m, int n)
-// {
-//     Eigen::MatrixXd prod_matrix(2 * n + 1, (n + 1) * (n + 1));
-//     for (auto& j : range(2 * n + 1)) {
-//         auto denominator = binom(2 * n, j);
-//         for (auto& i : range(std::max(0, j - n), std::min(n, j) + 1)) {
-//             if (n >= i && n >= j - i && 2 * n && j && j - i >= 0) {
-//                 prod_matrix(j, n * i + j) = (binom(n, i) * binom(n, j - i)) / denominator;
-//             }
-//         }
-//     }
-//     return prod_matrix;
-// }
 
 // For computing norm
 Eigen::MatrixXd bezier_product_matrix(int n)
@@ -109,8 +76,8 @@ int Bernstein::degree()
 
 Eigen::VectorXd Bernstein::operator()(double t)
 {
-    Eigen::VectorXd result(dimension());
-    return result;
+    auto tau = (t - initial_time_) / (final_time_ - t);
+    return deCasteljau_Nd(control_points_, tau);
 }
 
 Bernstein Bernstein::operator+(Bernstein& other)
