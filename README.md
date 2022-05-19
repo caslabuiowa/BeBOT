@@ -3,8 +3,19 @@ Bernstein/Beziér Optimal Trajectories (BeBOT) toolkit for generating optimal tr
 
 A comprehensive review of the techniques employed by the toolkit can be found in [BeBOT: Bernstein Polynomial Toolkit for Trajectory Generation](https://doi.org/10.1109/IROS40897.2019.8967564).
 
-# Running Examples
-An Anaconda environment YAML file is provided to help make the process of running the examples smooth. On Linux you should be able to run `conda env create -f bebotenv.yml`. On Windows, you will need to use the Anaconda Navigator to import the environment file.
+# Compiling and Development
+To compile this code, use cmake
+```bash
+git clone https://github.com/caslabuiowa/BeBOT
+cd BeBOT
+git checkout bebot_cpp
+mkdir build
+cd build
+cmake ..
+make
+```
+If you're a developer, to make life easier, consider using your IDE of choice (VSCode recommended) with clangd as your language server. 
+Formatting can be fixed and standardised by clang-format using the included .clang-format file (with vscode, Ctrl-Shift-I with clangd applies it).
 
 # General Explanation
 The goal of this project is to put forward an algorithm to solve motion planning problems, enabling autonomous operations for cooperative vehicles navigating in complex environment in the presence of humans. The approach is to formulate the trajectory generation problem as an optimal control problem (OCP) and then use Bernstein polynomials to transcribe it into a nonlinear programming (NLP) problem which can be solved using off-the-shelf solvers. So, what does all of that mean?
