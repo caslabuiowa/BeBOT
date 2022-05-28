@@ -7,9 +7,6 @@
 #include <Eigen/Dense>
 #include <utility>
 
-// Pythonic range functions
-std::vector<int> range(const int& start, const int& end);
-std::vector<int> range(const int& end);
 
 // de Casteljau evaluation algorithm
 // 1D, 1 time point
