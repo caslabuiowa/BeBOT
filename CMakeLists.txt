@@ -24,5 +24,10 @@ target_include_directories(main PRIVATE
 )
 target_link_libraries(main PRIVATE bebot)
 
+
 # Tests
-add_subdirectory(tests)
+# OFF by default
+option(BUILD_TESTING "" OFF)
+IF (BUILD_TESTING)
+    add_subdirectory(tests)
+ENDIF (BUILD_TESTING)
