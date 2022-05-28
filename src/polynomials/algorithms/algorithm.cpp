@@ -1,5 +1,6 @@
 #include "bebot/algorithm.hpp"
 #include "numeric"
+#include <iostream>
 
 // Python-like range functions
 std::vector<int> range(const int& start, const int& end)
@@ -21,8 +22,8 @@ double deCasteljau_1d(const Eigen::VectorXd& control_points, double t)
 {
     Eigen::VectorXd control_points_new = control_points;
     while (control_points_new.size() > 1) {
-        Eigen::VectorXd lower_order_points = Eigen::VectorXd::Zero(control_points.size() - 1);
-        for (auto& i : range(lower_order_points.size())) {
+        Eigen::VectorXd lower_order_points = Eigen::VectorXd::Zero(control_points_new.size() - 1);
+        for (auto i : range(lower_order_points.size())) {
             lower_order_points(i) = (1 - t) * control_points_new(i) + t * control_points_new(i + 1);
         }
         control_points_new = lower_order_points;

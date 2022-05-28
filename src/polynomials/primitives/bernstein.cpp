@@ -7,6 +7,7 @@
 #include <utility>
 #include <algorithm>
 #include <vector>
+#include <iostream>
 
 using namespace bebot::bernstein;
 
@@ -59,8 +60,8 @@ Eigen::MatrixXd bezier_product_matrix(int n)
 Bernstein::Bernstein(Eigen::MatrixXd control_points, double initial_time, double final_time)
   : control_points_(control_points), initial_time_(initial_time), final_time_(final_time)
 {
-    if (final_time_ > initial_time_) {
-        throw std::runtime_error("Final time must be less than initial time");
+    if (final_time_ < initial_time_) {
+        throw std::runtime_error("Final time must be more than initial time");
     }
 }
 
@@ -76,7 +77,7 @@ int Bernstein::degree()
 
 Eigen::VectorXd Bernstein::operator()(double t)
 {
-    auto tau = (t - initial_time_) / (final_time_ - t);
+    auto tau = (t - initial_time_) / (final_time_ - initial_time_);
     return deCasteljau_Nd(control_points_, tau);
 }
 
