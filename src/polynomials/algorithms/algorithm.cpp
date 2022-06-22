@@ -1,18 +1,8 @@
 #include "bebot/algorithm.hpp"
-#include "numeric"
+#include "bebot/bernstein.hpp"
+#include "common.hpp"
 
-// Python-like range functions
-std::vector<int> range(const int& start, const int& end)
-{
-    std::vector<int> out(end - start);
-    std::iota(out.begin(), out.end(), start);
-    return out;
-}
-
-std::vector<int> range(const int& end)
-{
-    return range(0, end);
-}
+#include <iostream>
 
 // de Casteljau algorithm implementations
 // Might move this to /algorithms?
@@ -21,8 +11,8 @@ double deCasteljau_1d(const Eigen::VectorXd& control_points, double t)
 {
     Eigen::VectorXd control_points_new = control_points;
     while (control_points_new.size() > 1) {
-        Eigen::VectorXd lower_order_points = Eigen::VectorXd::Zero(control_points.size() - 1);
-        for (auto& i : range(lower_order_points.size())) {
+        Eigen::VectorXd lower_order_points = Eigen::VectorXd::Zero(control_points_new.size() - 1);
+        for (auto i : range(lower_order_points.size())) {
             lower_order_points(i) = (1 - t) * control_points_new(i) + t * control_points_new(i + 1);
         }
         control_points_new = lower_order_points;
