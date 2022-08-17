@@ -1,0 +1,7 @@
+version: "3"
+services:
+  bebot:
+    build:
+      context: ./..
+      dockerfile: ./docker/dockerfile
+
