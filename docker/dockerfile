@@ -1,0 +1,20 @@
+FROM ubuntu:22.04
+FROM gcc:latest
+COPY . /app
+WORKDIR /app
+
+# Install dependencies
+RUN apt-get update && apt-get install -y cmake libgtest-dev clang-format libboost-test-dev
+# coinor-libipopt-dev has errors, commented for now
+
+# Install Eigen3 (ligeigen-3dev does not install  3.4.0
+RUN wget https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
+RUN tar -xf eigen-3.4.0.tar.gz
+WORKDIR /app/eigen-3.4.0/build
+RUN cmake ..
+
+# Compile
+WORKDIR /app/build
+RUN cmake ..
+RUN make
+CMD [ "./main" ]
