@@ -14,8 +14,13 @@ cd build
 cmake ..
 make
 ```
-If you're a developer, to make life easier, consider using your IDE of choice (VSCode recommended) with clangd as your language server. 
-Formatting can be fixed and standardised by clang-format using the included .clang-format file (with vscode, Ctrl-Shift-I with clangd applies it).
+# Contributing
+If you're a developer, to make life easier, consider using your IDE of choice (VSCode recommended) with clangd as your language server. Formatting can be fixed and standardised by 
+running the format script. You can also run clang-format on your files through your IDE (Ctrl-Shift-I on VSCode).
+```bash
+cd BeBOT
+./format.sh
+```
 
 # General Explanation
 The goal of this project is to put forward an algorithm to solve motion planning problems, enabling autonomous operations for cooperative vehicles navigating in complex environment in the presence of humans. The approach is to formulate the trajectory generation problem as an optimal control problem (OCP) and then use Bernstein polynomials to transcribe it into a nonlinear programming (NLP) problem which can be solved using off-the-shelf solvers. So, what does all of that mean?
