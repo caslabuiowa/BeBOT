@@ -3,14 +3,14 @@
 #include <utility>
 #include <vector>
 
-namespace bebot::bernstein
-{
-
-class Bernstein
-{
+namespace bebot::bernstein {
+class Bernstein {
   public:
     // Constructors
     Bernstein(Eigen::MatrixXd control_points, double initial_time = 0, double final_time = 1);
+    Bernstein(
+        std::vector<Eigen::Vector3d> control_points, double initial_time = 0, double final_time = 1
+    );
 
     // Information
     int dimension();
@@ -25,6 +25,7 @@ class Bernstein
     Bernstein operator-(Bernstein& b);
     Bernstein operator*(Bernstein& b);
     Bernstein operator/(Bernstein& b);
+    bool operator==(Bernstein& b);
 
     double mininum(int dimension, double tolerance = 1e-6);
 
@@ -39,7 +40,9 @@ class Bernstein
   private:
     Eigen::MatrixXd control_points_;
     double initial_time_;
+
     double final_time_;
+    double normalized_time(double t);
 };
 
 }  // namespace bebot::bernstein

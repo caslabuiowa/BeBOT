@@ -6,10 +6,8 @@
 
 #include <Eigen/Dense>
 
-namespace bebot
-{
-class BeBOT
-{
+namespace bebot {
+class BeBOT {
   private:
     double _t0, _tf;
     Eigen::MatrixXd _cpts;

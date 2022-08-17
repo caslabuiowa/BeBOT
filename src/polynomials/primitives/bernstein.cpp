@@ -14,11 +14,9 @@
 using namespace bebot::bernstein;
 using namespace bebot::bernstein::internal;
 
-namespace
-{
+namespace {
 
-std::pair<Bernstein, Bernstein> temporally_align(Bernstein bernstein_1, Bernstein bernstein_2)
-{
+std::pair<Bernstein, Bernstein> temporally_align(Bernstein bernstein_1, Bernstein bernstein_2) {
     // TODO: implement
     // requires:
     //        split
@@ -28,31 +26,34 @@ std::pair<Bernstein, Bernstein> temporally_align(Bernstein bernstein_1, Bernstei
 }  // namespace
 
 Bernstein::Bernstein(Eigen::MatrixXd control_points, double initial_time, double final_time)
-  : control_points_(control_points), initial_time_(initial_time), final_time_(final_time)
-{
+  : control_points_(control_points), initial_time_(initial_time), final_time_(final_time) {
     if (final_time_ < initial_time_) {
         throw std::runtime_error("Final time must be more than initial time");
     }
 }
 
-int Bernstein::dimension()
-{
+Bernstein::Bernstein(
+    std::vector<Eigen::Vector3d> control_points, double initial_time, double final_time
+)
+  : Bernstein(
+        Eigen::Map<Eigen::MatrixXd>(control_points.front().data(), 3, control_points.size()),
+        initial_time, final_time
+    ) {
+}
+
+int Bernstein::dimension() {
     return control_points_.rows();
 }
 
-int Bernstein::degree()
-{
+int Bernstein::degree() {
     return control_points_.cols() - 1;
 }
 
-Eigen::VectorXd Bernstein::operator()(double t)
-{
-    auto tau = (t - initial_time_) / (final_time_ - initial_time_);
-    return deCasteljau_Nd(control_points_, tau);
+Eigen::VectorXd Bernstein::operator()(double t) {
+    return deCasteljau_Nd(control_points_, normalized_time(t));
 }
 
-Bernstein Bernstein::operator+(Bernstein& other)
-{
+Bernstein Bernstein::operator+(Bernstein& other) {
     if (initial_time_ == other.initial_time_ && final_time_ == other.final_time_) {
         return Bernstein(control_points_ + other.control_points_, initial_time_, final_time_);
     } else {
@@ -64,8 +65,7 @@ Bernstein Bernstein::operator+(Bernstein& other)
     }
 }
 
-Bernstein Bernstein::operator-(Bernstein& other)
-{
+Bernstein Bernstein::operator-(Bernstein& other) {
     if (initial_time_ == other.initial_time_ && final_time_ == other.final_time_) {
         return Bernstein(control_points_ - other.control_points_, initial_time_, final_time_);
     } else {
@@ -77,8 +77,7 @@ Bernstein Bernstein::operator-(Bernstein& other)
     }
 }
 
-Bernstein Bernstein::operator*(Bernstein& other)
-{
+Bernstein Bernstein::operator*(Bernstein& other) {
     if (other.dimension() != dimension()) {
         throw std::runtime_error("Dimensions must match");
     };
@@ -86,4 +85,13 @@ Bernstein Bernstein::operator*(Bernstein& other)
     // TODO: implement
     Bernstein output{ product_control_points, initial_time_, final_time_ };
     return output;
+}
+
+bool Bernstein::operator==(Bernstein& other) {
+    return control_points_.isApprox(other.control_points_) &&
+           initial_time_ == other.initial_time_ && final_time_ == other.final_time_;
+}
+
+double Bernstein::normalized_time(double t) {
+    return (t - initial_time_) / (final_time_ - initial_time_);
 }
