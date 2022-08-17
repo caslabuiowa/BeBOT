@@ -46,4 +46,3 @@ SpaceBeforeAssignmentOperators: true
 ContinuationIndentWidth: 4
 SortIncludes: false
 SpaceAfterCStyleCast: false
-BreakBeforeBraces: Linux

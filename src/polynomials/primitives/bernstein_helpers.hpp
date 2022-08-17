@@ -1,9 +1,10 @@
+#pragma once
+
 #include <Eigen/Dense>
 
 #include <vector>
 
-namespace bebot::bernstein::internal
-{
+namespace bebot::bernstein::internal {
 
 double binom(int n, int k);
 

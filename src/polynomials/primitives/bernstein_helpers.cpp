@@ -3,18 +3,14 @@
 
 #include <numeric>
 
-namespace bebot::bernstein::internal
-{
-
-double binom(int n, int k)
-{
+namespace bebot::bernstein::internal {
+double binom(int n, int k) {
     // Stolen from cppreference :P
     // TODO: No idea how efficient this is
     return 1 / ((n + 1) * std::beta(n - k + 1, k + 1));
 }
 
-Eigen::MatrixXd bezier_coefficients(int n)
-{
+Eigen::MatrixXd bezier_coefficients(int n) {
     Eigen::MatrixXd coefficients = Eigen::MatrixXd::Zero(n + 1, n + 1);
     for (auto k : range(0, n + 1)) {
         for (auto i : range(k, n + 1)) {
@@ -25,8 +21,7 @@ Eigen::MatrixXd bezier_coefficients(int n)
 }
 
 // For computing norm
-Eigen::MatrixXd bezier_product_matrix(int n)
-{
+Eigen::MatrixXd bezier_product_matrix(int n) {
     Eigen::MatrixXd prod_matrix(2 * n + 1, (n + 1) * (n + 1));
     for (auto j : range(2 * n + 1)) {
         auto denominator = binom(2 * n, j);

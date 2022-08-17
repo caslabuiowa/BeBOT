@@ -7,7 +7,6 @@
 #include <Eigen/Dense>
 #include <utility>
 
-
 // de Casteljau evaluation algorithm
 // 1D, 1 time point
 double deCasteljau_1d(const Eigen::VectorXd& control_points, double t);
