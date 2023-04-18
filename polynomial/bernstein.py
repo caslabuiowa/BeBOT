@@ -1211,25 +1211,25 @@ def _collCheckBez2Bez(cpts1, cpts2, count=0, alpha=np.inf, maxIter=10, eps=1e-9)
         # c2R = c2R[::-1]
 
         count += 1
-        alphaNew = _collCheckBez2Bez(c1L, c2L, count=count, alpha=alpha)  # ,
+        alphaNew = _collCheckBez2Bez(c1L, c2L, count=count, alpha=alpha, maxIter=maxIter, eps=eps)  # ,
                                           # t1_l=t1_l, t1_h=t1_l+0.5*t1len,
                                           # t2_l=t2_l, t2_h=t2_l+0.5*t2len)
         if alphaNew < alpha:
             alpha = alphaNew
 
-        alphaNew = _collCheckBez2Bez(c1L, c2R, count=count, alpha=alpha)  # ,
+        alphaNew = _collCheckBez2Bez(c1L, c2R, count=count, alpha=alpha, maxIter=maxIter, eps=eps)  # ,
                                           # t1_l=t1_l, t1_h=t1_l+0.5*t1len,
                                           # t2_l=t2_l+0.5*t2len, t2_h=t2_h)
         if alphaNew < alpha:
             alpha = alphaNew
 
-        alphaNew = _collCheckBez2Bez(c1R, c2L, count=count, alpha=alpha)  # ,
+        alphaNew = _collCheckBez2Bez(c1R, c2L, count=count, alpha=alpha, maxIter=maxIter, eps=eps)  # ,
                                           # t1_l=t1_l+0.5*t1len, t1_h=t1_h,
                                           # t2_l=t2_l, t2_h=t2_l+0.5*t2len)
         if alphaNew < alpha:
             alpha = alphaNew
 
-        alphaNew = _collCheckBez2Bez(c1R, c2R, count=count, alpha=alpha)  # ,
+        alphaNew = _collCheckBez2Bez(c1R, c2R, count=count, alpha=alpha, maxIter=maxIter, eps=eps)  # ,
                                           # t1_l=t1_l+0.5*t1len, t1_h=t1_h,
                                           # t2_l=t2_l+0.5*t2len, t2_h=t2_h)
         if alphaNew < alpha:
