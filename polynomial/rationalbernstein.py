@@ -11,7 +11,7 @@ from numba import njit
 import numpy as np
 from scipy.special import binom
 
-from polynomial.base import Base
+from BeBOT.polynomial.base import Base
 
 # TODO de Cast for rational BP
 # TODO elevate for rational BP

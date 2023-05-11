@@ -17,8 +17,8 @@ from numba import jit, njit
 import numpy as np
 from scipy.special import binom
 
-from polynomial.base import Base
-from polynomial.rationalbernstein import RationalBernstein
+from BeBOT.polynomial.base import Base
+from BeBOT.polynomial.rationalbernstein import RationalBernstein
 
 
 # TODO
