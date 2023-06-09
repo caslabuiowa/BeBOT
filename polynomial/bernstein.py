@@ -17,8 +17,8 @@ from numba import jit, njit
 import numpy as np
 from scipy.special import binom
 
-from polynomial.base import Base
-from polynomial.rationalbernstein import RationalBernstein
+from BeBOT.polynomial.base import Base
+from BeBOT.polynomial.rationalbernstein import RationalBernstein
 
 
 # TODO
@@ -26,7 +26,7 @@ from polynomial.rationalbernstein import RationalBernstein
 # * Change cache values to reflect tf-t0 and use a hashtable lookup (in Base
 #   class)
 class Bernstein(Base):
-    """Bernstein polynomial class for trajectory generation
+    """Bernstein polynomial class for trajectory generation.
 
     Allows the user to construct a Bernstein (Bezier) polynomial of arbitrary
     dimension and degree.
@@ -476,109 +476,8 @@ class Bernstein(Base):
 
         return c1, c2
 
-#    def min(self, dim=0, tol=1e-6, maxIter=1000):
-#        """Returns the minimum value of the Bezier curve in a single dimension
-#
-#        Finds the minimum value of the Bezier curve. This is done by first
-#        checking the first and last control points since the first and last
-#        point lie on the curve. If the first or last control point is not the
-#        minimum value, the curve is split at the lowest control point. The new
-#        minimum value is then defined as the lowest control point of the two
-#        new curves. This continues until the difference between the new minimum
-#        and old minimum values is within the desired tolerance.
-#
-#        :param dim: Which dimension to return the minimum of.
-#        :type dim: int
-#        :param tol: Tolerance of the minimum value.
-#        :type tol: float
-#        :param maxIter: Maximum number of iterations to search for the minimum.
-#        :type maxIter: int
-#        :return: Minimum value of the Bezier curve. None if maximum iterations
-#            is met.
-#        :rtype: float or None
-#        """
-#        minVal = min(self.cpts[dim, :])
-#        tol = np.abs(tol*np.mean(self.cpts))
-#
-#        if self.cpts[dim, 0] == minVal:
-#            return self.cpts[dim, 0]
-#
-#        elif self.cpts[dim, -1] == minVal:
-#            return self.cpts[dim, -1]
-#
-#        else:
-#            lastMin = np.inf
-#            newCurve = self.copy()
-#            for _ in range(maxIter):
-#                splitPoint = (np.argmin(newCurve.cpts[dim, :])
-#                              / (newCurve.deg+1.0))
-#                c1, c2 = newCurve.split(splitPoint)
-#
-#                min1 = min(c1.cpts[dim, :])
-#                min2 = min(c2.cpts[dim, :])
-#
-#                if min1 < min2:
-#                    newCurve = c1
-#                    newMin = min1
-#
-#                else:
-#                    newCurve = c2
-#                    newMin = min2
-#
-#                if np.abs(newMin-lastMin) < tol:
-#                    return newMin
-#                else:
-#                    lastMin = newMin
-#
-#            print('Maximum number of iterations met')
-#            return None
-
-    # def min(self, dim=0, globMin=-np.inf, tol=1e-6):
-    #     """Returns the minimum value of the Bernstein polynomialin a single
-    #     dimension
-
-    #     Finds the minimum value of the Bernstein polynomial. This is done by
-    #     first checking the first and last control points since the first and
-    #     last point lie on the curve. If the first or last control point is not
-    #     the minimum value, the curve is split at the lowest control point. The
-    #     new minimum value is then defined as the lowest control point of the
-    #     two new curves. This continues until the difference between the new
-    #     minimum and old minimum values is within the desired tolerance.
-
-    #     :param dim: Which dimension to return the minimum of.
-    #     :type dim: int
-    #     :param tol: Tolerance of the minimum value.
-    #     :type tol: float
-    #     :param maxIter: Maximum number of iterations to search for the minimum.
-    #     :type maxIter: int
-    #     :return: Minimum value of the Bernstein polynomial. None if maximum
-    #         iterations is met.
-    #     :rtype: float or None
-    #     """
-    #     minIdx = np.argmin(self.cpts[dim, :])
-    #     newMin = min(self.cpts[dim, :])
-
-    #     error = np.abs(globMin-newMin)
-
-    #     if error < tol:
-    #         return newMin
-    #     elif minIdx != 0 and minIdx != self.deg:
-    #         splitPoint = minIdx / self.deg
-    #         c1, c2 = self.split(splitPoint)
-    #         try:
-    #             c1min = c1.min(dim=dim, globMin=newMin, tol=tol)
-    #             c2min = c2.min(dim=dim, globMin=newMin, tol=tol)
-    #         except RecursionError as e:
-    #             print('[!] Runtime error in Bernstein.min()')
-    #             print(e)
-    #             return newMin
-
-    #         newMin = min((c1min, c2min))
-
-    #     return newMin
     def min(self, dim=0, globMin=np.inf, tol=1e-6):
-        """Returns the minimum value of the Bernstein polynomialin a single
-        dimension
+        """Return the minimum value of the Bernstein polynomialin a single dimension.
 
         Finds the minimum value of the Bernstein polynomial. This is done by
         first checking the first and last control points since the first and
@@ -622,66 +521,8 @@ class Bernstein(Base):
 
             return min(c1min, c2min)
 
-#    def max4(self, dim=0, tol=1e-6, maxIter=1000):
-#        """Returns the maximum value of the Bezier curve in a single dimension
-#
-#        Finds the maximum value of the Bezier curve. This is done by first
-#        checking the first and last control points since the first and last
-#        point lie on the curve. If the first or last control point is not the
-#        maximum value, the curve is split at the highest control point. The new
-#        maximum value is then defined as the highest control point of the two
-#        new curves. This continues until the difference between the new maximum
-#        and old maximum values is within the desired tolerance.
-#
-#        :param dim: Which dimension to return the maximum of.
-#        :type dim: int
-#        :param tol: Tolerance of the maximum value.
-#        :type tol: float
-#        :param maxIter: Maximum number of iterations to search for the minimum.
-#        :type maxIter: int
-#        :return: Maximum value of the Bezier curve. None if maximum iterations
-#            is met.
-#        :rtype: float or None
-#        """
-#        maxVal = max(self.cpts[dim, :])
-#
-#        if self.cpts[dim, 0] == maxVal:
-#            return self.cpts[dim, 0]
-#
-#        elif self.cpts[dim, -1] == maxVal:
-#            return self.cpts[dim, -1]
-#
-#        else:
-#            lastMax = np.inf
-#            newCurve = self.copy()
-#            for _ in range(maxIter):
-#                splitPoint = (np.argmax(newCurve.cpts[dim, :])
-#                              / (newCurve.deg+1.0))
-#                c1, c2 = newCurve.split(splitPoint)
-#
-#                max1 = max(c1.cpts[dim, :])
-#                max2 = max(c2.cpts[dim, :])
-#
-#                if max1 > max2:
-#                    newCurve = c1
-#                    newMax = max1
-#
-#                else:
-#                    newCurve = c2
-#                    newMax = max2
-#
-#                if np.abs(newMax-lastMax)/newMax < tol:
-#                    return newMax
-#                else:
-#                    lastMax = newMax
-#
-#            print('Maximum number of iterations met')
-#            return None
-
-# TODO: fix max os that it behaves like min above
-    def max(self, dim=0, globMax=np.inf, tol=1e-6):  # , maxIter=1000):
-        """Returns the maximum value of the Bernstein polynomial in a single
-        dimension
+    def max(self, dim=0, globMax=-np.inf, tol=1e-6):
+        """Return the maximum value of the Bernstein polynomial in a single dimension.
 
         Finds the maximum value of the Bernstein polynomial. This is done by
         first checking the first and last control points since the first and
@@ -701,97 +542,25 @@ class Bernstein(Base):
             iterations is met.
         :rtype: float or None
         """
-        maxIdx = np.argmax(self.cpts[dim, :])
-        newMax = max(self.cpts[dim, :])
+        lb = self.cpts[dim, (0, -1)].max()
+        if lb > globMax:
+            globMax = lb
 
-        error = np.abs(globMax-newMax)
+        maxIdx = self.cpts[dim, :].argmax()
+        ub = self.cpts[dim, maxIdx]
 
-        if error < tol:
-            return newMax
-        elif maxIdx != 0 and maxIdx != self.deg:
-            splitPoint = maxIdx / self.deg
-            c1, c2 = self.split(splitPoint)
-            c1max = c1.max(dim=dim, globMax=newMax, tol=tol)
-            c2max = c2.max(dim=dim, globMax=newMax, tol=tol)
+        if ub - lb < tol:
+            return globMax
 
-            newMax = max((c1max, c2max))
+        else:
+            tdiv = (maxIdx/self.deg)*(self.tf - self.t0) + self.t0
+            c1, c2 = self.split(tdiv)
+            c1max = c1.max(dim=dim, globMax=globMax, tol=tol)
+            c2max = c2.max(dim=dim, globMax=globMax, tol=tol)
+
+            newMax = max(c1max, c2max)
 
         return newMax
-
-#    def max3(self, dim=0, tol=1e-3, maxIter=1000):
-#        maxIdx = np.argmax(self.cpts[dim, :])
-#        oldMax = max(self.cpts[dim, :])
-#
-#        oldCurve = self.copy()
-#
-#        if maxIdx == 0 or maxIdx == self.deg:
-#            newMax = oldMax
-#        else:
-#            for _ in range(maxIter):
-#                newCurve = oldCurve.elev(oldCurve.deg+10)
-#                newMax = max(newCurve.cpts[dim, :])
-#
-#                error = np.abs(newMax-oldMax) / newMax
-#
-#                if error < tol:
-#                    break
-#
-#                oldMax = newMax
-#                oldCurve = newCurve.copy()
-#
-#        return newMax
-#
-#    def min2(self, dim=0, tol=1e-6, maxIter=1000):
-#        """Uses scipy's fminbound to find the minimum value of the Bezier curve
-#
-#        This method is slower than min because it does not exploit the useful
-#        properties of a Bezier curve.
-#
-#        :param dim: Which dimension to return the minimum of.
-#        :type dim: int
-#        :param tol: Tolerance of the minimum value.
-#        :type tol: float
-#        :param maxIter: Maximum number of iterations to search for the minimum.
-#        :type maxIter: int
-#        :return: Minimum value of the Bezier curve. None if maximum iterations
-#            is met.
-#        :rtype: float or None
-#        """
-#        def fun(x): return bezierCurve(self.cpts[dim, :], x, tf=self._tf)
-#        _, minVal, status, _ = scipy.optimize.fminbound(fun,
-#                                                        x1=0,
-#                                                        x2=1,
-#                                                        xtol=tol,
-#                                                        maxfun=maxIter,
-#                                                        full_output=True,
-#                                                        disp=1)
-#        return minVal[0] if status == 0 else None
-#
-#    def max2(self, dim=0, tol=1e-6, maxIter=1000):
-#        """Uses scipy's fminbound to find the maximum value of the Bezier curve
-#
-#        This method is slower than max because it does not exploit the useful
-#        properties of a Bezier curve.
-#
-#        :param dim: Which dimension to return the minimum of.
-#        :type dim: int
-#        :param tol: Tolerance of the minimum value.
-#        :type tol: float
-#        :param maxIter: Maximum number of iterations to search for the minimum.
-#        :type maxIter: int
-#        :return: Maximum value of the Bezier curve. None if maximum iterations
-#            is met.
-#        :rtype: float or None
-#        """
-#        def fun(x): return -bezierCurve(self.cpts[dim, :], x, tf=self._tf)
-#        _, maxVal, status, _ = scipy.optimize.fminbound(fun,
-#                                                        x1=0,
-#                                                        x2=1,
-#                                                        xtol=tol,
-#                                                        maxfun=maxIter,
-#                                                        full_output=True,
-#                                                        disp=1)
-#        return -maxVal[0] if status == 0 else None
 
     def minDist(self, otherCurve):
         """
@@ -840,7 +609,27 @@ class Bernstein(Base):
     def collCheck(self, otherCurve):
         """
         """
-        return _collCheckBez2Bez(self, otherCurve)
+        if (self.dim < 2 or self.dim > 3 or
+                otherCurve.dim < 2 or otherCurve.dim > 3):
+            err = ('Both curves must be either 2D or 3D, not {}D and {}D.'
+                   ).format(self.dim, otherCurve.dim)
+            raise ValueError(err)
+
+        cpts1 = self.cpts.copy()
+        cpts2 = otherCurve.cpts.copy()
+
+        if cpts1.shape[0] < 3:
+            cpts1 = np.concatenate([cpts1, np.zeros((1, cpts1.shape[1]))])
+
+        if cpts2.shape[0] < 3:
+            cpts2 = np.concatenate([cpts2, np.zeros((1, cpts2.shape[1]))])
+
+        res = _collCheckBez2Bez(cpts1, cpts2)
+
+        if res == -1:
+            res = 1
+
+        return res
 
     def collCheck2Poly(self, poly):
         """
@@ -1254,7 +1043,7 @@ def splitCurveMat(deg, z, coefMat=None):
 
 def _minDist(cpts1, cpts2, count=0, alpha=np.inf, eps=1e-9, t1_l=0., t1_h=1., t2_l=0., t2_h=1.):
     """
-    Finds the minimum distance between two Bernstein polynomials given their control points.
+    Find the minimum distance between two Bernstein polynomials given their control points.
 
     TODO Documentation
 
@@ -1362,132 +1151,91 @@ def _minDist(cpts1, cpts2, count=0, alpha=np.inf, eps=1e-9, t1_l=0., t1_h=1., t2
         return alpha, tdiv1, tdiv2
 
 
-# def _minDist(c1, c2, cnt=0, alpha=np.inf, eps=1e-9,
-#              t1_l=0, t1_h=1, t2_l=0, t2_h=1):
-#     """
-#     Source: Computation of the minimum distance between two Bezier
-#     curves/surfaces
-#     """
-#     x1 = c1.cpts[0, :]
-#     y1 = c1.cpts[1, :]
-#     x2 = c2.cpts[0, :]
-#     y2 = c2.cpts[1, :]
+# def _colCheck(cpts1, cpts2, count=0, alpha=np.inf, maxIter=10, eps=1e-9):
+def _collCheckBez2Bez(cpts1, cpts2, count=0, alpha=np.inf, maxIter=10, eps=1e-9):
+    """
+    Find the minimum distance between two Bernstein polynomials given their control points.
 
-#     if c1.dim == 3:
-#         z1 = c1.cpts[2, :]
-#     else:
-#         z1 = [0]*x1.size
+    TODO Documentation
 
-#     if c2.dim == 3:
-#         z2 = c2.cpts[2, :]
-#     else:
-#         z2 = [0]*x1.size
+    Parameters
+    ----------
+    cpts1 : TYPE
+        DESCRIPTION.
+    cpts2 : TYPE
+        DESCRIPTION.
+    cnt : TYPE, optional
+        DESCRIPTION. The default is 0.
+    alpha : TYPE, optional
+        DESCRIPTION. The default is np.inf.
+    maxIter : TYPE, optional
+        DESCRIPTION. The default is 10.
 
-#     c1 = Bernstein([x1, y1, z1])
-#     c2 = Bernstein([x2, y2, z2])
+    Returns
+    -------
+    alpha : TYPE
+        DESCRIPTION.
 
-#     poly1 = np.array(tuple(zip(x1, y1, z1)))
-#     poly2 = np.array(tuple(zip(x2, y2, z2)))
+    """
+    lb = pygjk(cpts1.T, cpts2.T)
+    if lb > eps:
+        # No collision
+        return 0
 
-#     cnt += 1
-#     if cnt > 1000:
-#         return (-1, -1, -1)
+    elif count > maxIter:
+        # Possible collision
+        return -1
 
-#     flag, info = gjkNew(poly1, poly2)
-#     if flag > 0:
-#         closest1 = info[0]
-#         closest2 = info[1]
-#         lb = info[2]
+    else:
+        c1L = []
+        c1R = []
+        for row in cpts1:
+            left, right = deCasteljauSplit(row, 0.5)
+            c1L.append(left)
+            c1R.append(right[::-1])
+        c1L = np.array(c1L, dtype=float)
+        c1R = np.array(c1R, dtype=float)
 
-#         # Check to see if the closest point on the shape is a control point
-#         p1idx = np.where((poly1 == closest1).all(axis=1))[0]
-#         p2idx = np.where((poly2 == closest2).all(axis=1))[0]
-#         if p1idx.size > 0:
-#             t1 = p1idx[0]/c1.deg
+        c2L = []
+        c2R = []
+        for row in cpts2:
+            left, right = deCasteljauSplit(row, 0.5)
+            c2L.append(left)
+            c2R.append(right[::-1])
+        c2L = np.array(c2L, dtype=float)
+        c2R = np.array(c2R, dtype=float)
 
-#         # If the closest point is not a control point, find t by weighting all
-#         # the control points by their distance from the closest point
-#         else:
-#             eucDist1 = np.linalg.norm(closest1-c1.cpts.T, axis=1)
-#             N = eucDist1.size
-#             W = np.empty(N)
-#             for i in range(N):
-#                 W[i] = 1 / (1 +
-#                             (eucDist1[i]/eucDist1[:i]).sum() +
-#                             (eucDist1[i]/eucDist1[i+1:]).sum())
+        # c1L, c1R = deCasteljauSplit(cpts1, 0.5)
+        # c1R = c1R[::-1]
+        # c2L, c2R = deCasteljauSplit(cpts2, 0.5)
+        # c2R = c2R[::-1]
 
-#             t1 = (W*range(N)/N).sum()
+        count += 1
+        alphaNew = _collCheckBez2Bez(c1L, c2L, count=count, alpha=alpha, maxIter=maxIter, eps=eps)  # ,
+                                          # t1_l=t1_l, t1_h=t1_l+0.5*t1len,
+                                          # t2_l=t2_l, t2_h=t2_l+0.5*t2len)
+        if alphaNew < alpha:
+            alpha = alphaNew
 
-#         if p2idx.size > 0:
-#             t2 = p2idx[0]/c2.deg
+        alphaNew = _collCheckBez2Bez(c1L, c2R, count=count, alpha=alpha, maxIter=maxIter, eps=eps)  # ,
+                                          # t1_l=t1_l, t1_h=t1_l+0.5*t1len,
+                                          # t2_l=t2_l+0.5*t2len, t2_h=t2_h)
+        if alphaNew < alpha:
+            alpha = alphaNew
 
-#         else:
-#             eucDist2 = np.linalg.norm(closest2-c2.cpts.T, axis=1)
-#             N = eucDist2.size
-#             W = np.empty(N)
-#             for i in range(N):
-#                 W[i] = 1 / (1 +
-#                             (eucDist2[i]/eucDist2[:i]).sum() +
-#                             (eucDist2[i]/eucDist2[i+1:]).sum())
+        alphaNew = _collCheckBez2Bez(c1R, c2L, count=count, alpha=alpha, maxIter=maxIter, eps=eps)  # ,
+                                          # t1_l=t1_l+0.5*t1len, t1_h=t1_h,
+                                          # t2_l=t2_l, t2_h=t2_l+0.5*t2len)
+        if alphaNew < alpha:
+            alpha = alphaNew
 
-#             t2 = (W*range(N)/N).sum()
+        alphaNew = _collCheckBez2Bez(c1R, c2R, count=count, alpha=alpha, maxIter=maxIter, eps=eps)  # ,
+                                          # t1_l=t1_l+0.5*t1len, t1_h=t1_h,
+                                          # t2_l=t2_l+0.5*t2len, t2_h=t2_h)
+        if alphaNew < alpha:
+            alpha = alphaNew
 
-#     else:
-#         t1 = 0.5
-#         t2 = 0.5
-#         lb = eps
-
-#     t1len = t1_h - t1_l
-#     t2len = t2_h - t2_l
-
-#     ub, t1local, t2local = _upperbound(c1.cpts, c2.cpts)
-
-#     if ub <= alpha:
-#         alpha = ub
-#         newT1 = (1-t1local)*t1_l + t1local*t1_h
-#         newT2 = (1-t2local)*t2_l + t2local*t2_h
-#     else:
-#         newT1 = -1
-#         newT2 = -1
-
-#     retval = (alpha, newT1, newT2)
-
-#     if lb >= alpha*(1-eps):
-#         return retval
-
-#     else:
-#         c3, c4 = c1.split(t1)
-#         c5, c6 = c2.split(t2)
-
-#         newAlpha, newT1, newT2 = _minDist(c3, c5, cnt=cnt, alpha=retval[0],
-#                                           t1_l=t1_l, t1_h=t1_l+t1*t1len,
-#                                           t2_l=t2_l, t2_h=t2_l+t2*t2len)
-
-#         if newAlpha < retval[0]:
-#             retval = (newAlpha, newT1, newT2)
-
-#         newAlpha, newT1, newT2 = _minDist(c3, c6, cnt=cnt, alpha=retval[0],
-#                                           t1_l=t1_l, t1_h=t1_l+t1*t1len,
-#                                           t2_l=t2_l+t2*t2len, t2_h=t2_h)
-
-#         if newAlpha < retval[0]:
-#             retval = (newAlpha, newT1, newT2)
-
-#         newAlpha, newT1, newT2 = _minDist(c4, c5, cnt=cnt, alpha=retval[0],
-#                                           t1_l=t1_l+t1*t1len, t1_h=t1_h,
-#                                           t2_l=t2_l, t2_h=t2_l+t2*t2len)
-
-#         if newAlpha < retval[0]:
-#             retval = (newAlpha, newT1, newT2)
-
-#         newAlpha, newT1, newT2 = _minDist(c4, c6, cnt=cnt, alpha=retval[0],
-#                                           t1_l=t1_l+t1*t1len, t1_h=t1_h,
-#                                           t2_l=t2_l+t2*t2len, t2_h=t2_h)
-
-#         if newAlpha < retval[0]:
-#             retval = (newAlpha, newT1, newT2)
-
-#     return retval
+        return alpha
 
 
 def _minDist2Poly(c1, poly2, cnt=0, alpha=np.inf, eps=1e-6, t1_l=0, t1_h=1):
@@ -1581,7 +1329,7 @@ def _minDist2Poly(c1, poly2, cnt=0, alpha=np.inf, eps=1e-6, t1_l=0, t1_h=1):
 @njit(cache=True)
 def _upperbound(c1, c2):
     """
-    Finds the upper bound on the minimum distance between two Bernstein polynomials.
+    Find the upper bound on the minimum distance between two Bernstein polynomials.
 
     Parameters
     ----------
@@ -1658,61 +1406,61 @@ def _norm(x):
     return np.sqrt(summation)
 
 
-def _collCheckBez2Bez(c1, c2, cnt=0, alpha=np.inf, eps=1e-9):
-    """
-    Source: Computation of the minimum distance between two Bezier
-    curves/surfaces
-    """
-    x1 = c1.cpts[0, :]
-    y1 = c1.cpts[1, :]
-    x2 = c2.cpts[0, :]
-    y2 = c2.cpts[1, :]
+# def _collCheckBez2Bez(c1, c2, cnt=0, alpha=np.inf, eps=1e-9):
+#     """
+#     Source: Computation of the minimum distance between two Bezier
+#     curves/surfaces
+#     """
+#     x1 = c1.cpts[0, :]
+#     y1 = c1.cpts[1, :]
+#     x2 = c2.cpts[0, :]
+#     y2 = c2.cpts[1, :]
 
-    if c1.dim == 3:
-        z1 = c1.cpts[2, :]
-    else:
-        z1 = [0]*x1.size
+#     if c1.dim == 3:
+#         z1 = c1.cpts[2, :]
+#     else:
+#         z1 = [0]*x1.size
 
-    if c2.dim == 3:
-        z2 = c2.cpts[2, :]
-    else:
-        z2 = [0]*x1.size
+#     if c2.dim == 3:
+#         z2 = c2.cpts[2, :]
+#     else:
+#         z2 = [0]*x1.size
 
-    c1 = Bernstein([x1, y1, z1])
-    c2 = Bernstein([x2, y2, z2])
+#     c1 = Bernstein([x1, y1, z1])
+#     c2 = Bernstein([x2, y2, z2])
 
-    poly1 = np.array(tuple(zip(x1, y1, z1)))
-    poly2 = np.array(tuple(zip(x2, y2, z2)))
+#     poly1 = np.array(tuple(zip(x1, y1, z1)))
+#     poly2 = np.array(tuple(zip(x2, y2, z2)))
 
-    cnt += 1
-    if cnt > 100:
-        return -1
+#     cnt += 1
+#     if cnt > 100:
+#         return -1
 
-    ub, t1local, t2local = _upperbound(c1.cpts, c2.cpts)
+#     ub, t1local, t2local = _upperbound(c1.cpts, c2.cpts)
 
-    flag, info = gjkNew(poly1, poly2)
-    if flag > 0:
-        return 1
-    else:
-        t1 = 0.5
-        t2 = 0.5
-        lb = 0
+#     flag, info = gjkNew(poly1, poly2)
+#     if flag > 0:
+#         return 1
+#     else:
+#         t1 = 0.5
+#         t2 = 0.5
+#         lb = 0
 
-    if ub <= alpha:
-        alpha = ub
+#     if ub <= alpha:
+#         alpha = ub
 
-    if lb >= alpha*(1-eps):
-        return alpha
+#     if lb >= alpha*(1-eps):
+#         return alpha
 
-    else:
-        c3, c4 = c1.split(t1)
-        c5, c6 = c2.split(t2)
-        alpha = min(alpha, _collCheckBez2Bez(c3, c5, cnt=cnt, alpha=alpha))
-        alpha = min(alpha, _collCheckBez2Bez(c3, c6, cnt=cnt, alpha=alpha))
-        alpha = min(alpha, _collCheckBez2Bez(c4, c5, cnt=cnt, alpha=alpha))
-        alpha = min(alpha, _collCheckBez2Bez(c4, c6, cnt=cnt, alpha=alpha))
+#     else:
+#         c3, c4 = c1.split(t1)
+#         c5, c6 = c2.split(t2)
+#         alpha = min(alpha, _collCheckBez2Bez(c3, c5, cnt=cnt, alpha=alpha))
+#         alpha = min(alpha, _collCheckBez2Bez(c3, c6, cnt=cnt, alpha=alpha))
+#         alpha = min(alpha, _collCheckBez2Bez(c4, c5, cnt=cnt, alpha=alpha))
+#         alpha = min(alpha, _collCheckBez2Bez(c4, c6, cnt=cnt, alpha=alpha))
 
-    return alpha
+#     return alpha
 
 
 def _collCheckBez2Poly(c1, poly2, cnt=0, alpha=np.inf, eps=1e-9):
@@ -1887,4 +1635,7 @@ if __name__ == '__main__':
 
     ax = c1.plot()
     c2.plot(ax)
+    pt1 = c1(10+10*t1)
+    pt2 = c2(10+10*t2)
+    ax.plot([pt1[0], pt2[0]], [pt1[1], pt2[1]])
     plt.show()

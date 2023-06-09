@@ -6,6 +6,15 @@ A comprehensive review of the techniques employed by the toolkit can be found in
 # Running Examples
 An Anaconda environment YAML file is provided to help make the process of running the examples smooth. On Linux you should be able to run `conda env create -f bebotenv.yml`. On Windows, you will need to use the Anaconda Navigator to import the environment file.
 
+# Installing OpenGJK
+A frozen version of Mattia Montanari's excellent [OpenGJK library](https://github.com/MattiaMontanari/openGJK) is provided in the `ext` folder. To compile it for use with BeBOT, first make sure you created the conda environment above. Next, install Cython,
+
+`pip install Cython`
+
+After installing Cython, navigate to `ext/openGJK/examples/cython` and run the following command to install openGJK
+
+`pip install .`
+
 # General Explanation
 The goal of this project is to put forward an algorithm to solve motion planning problems, enabling autonomous operations for cooperative vehicles navigating in complex environment in the presence of humans. The approach is to formulate the trajectory generation problem as an optimal control problem (OCP) and then use Bernstein polynomials to transcribe it into a nonlinear programming (NLP) problem which can be solved using off-the-shelf solvers. So, what does all of that mean?
 

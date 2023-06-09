@@ -1,12 +1,12 @@
 name: bebotenv
 channels:
   - default
-  - conda-forge
 dependencies:
-  - cartopy
+  - conda-forge::cartopy
   - matplotlib
   - numba
   - numpy
   - pandas
   - scipy
   - spyder
+  - pip

@@ -59,11 +59,13 @@ def setRCParams():
     # for an IEEE publication. Also sets font sizes and line widths for easier
     # viewing.
     plt.rcParams.update({
-                'font.size': 40,
+                'font.size': 32,
                 'pdf.fonttype': 42,
                 'ps.fonttype': 42,
-                'xtick.labelsize': 40,
-                'ytick.labelsize': 40,
+                'figure.titlesize': 32,
+                'legend.fontsize': 24,
+                'xtick.labelsize': 24,
+                'ytick.labelsize': 24,
                 'lines.linewidth': 4,
                 'lines.markersize': 18,
                 'figure.figsize': [13.333, 10]
@@ -265,6 +267,7 @@ def saveFigs():
         saveName = os.path.join(FIG_DIR, title.replace(' ', '_') + '.' + FIG_FORMAT)
         fig.savefig(saveName, format=FIG_FORMAT)
         ax.set_title(title)
+        plt.tight_layout()
         plt.draw()
 
     print('Done saving figures')
