@@ -20,5 +20,9 @@ std::vector<Eigen::VectorXd>
 deCasteljau_Nd(const Eigen::VectorXd& control_points, std::vector<double> t);
 
 // de Casteljau split algorithm
+// 1D
+std::pair<Eigen::VectorXd, Eigen::VectorXd>
+deCasteljau_split_1d(const Eigen::VectorXd& control_points, double t);
+// N-D
 std::pair<Eigen::MatrixXd, Eigen::MatrixXd>
-deCasteljau_split(const Eigen::VectorXd& control_points, double t);
+deCasteljau_split(const Eigen::MatrixXd& control_points, double t);

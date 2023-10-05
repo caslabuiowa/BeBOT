@@ -51,6 +51,32 @@ deCasteljau_Nd(const Eigen::MatrixXd& control_points, std::vector<double> t)
     return out;
 }
 
+std::pair<Eigen::VectorXd, Eigen::VectorXd>
+deCasteljau_split_1d(const Eigen::VectorXd& control_points, double t) {
+    auto control_points_left = Eigen::VectorXd(control_points.size());
+    auto control_points_right = Eigen::VectorXd(control_points.size());
+    auto index = 0;
+    auto new_control_points = control_points;
+    auto temp_control_points = control_points;
+
+    while (new_control_points.size() > 1) {
+        control_points_left(index) = temp_control_points(0);
+        control_points_right(index) = temp_control_points(Eigen::last);
+        index++;
+
+        temp_control_points = Eigen::VectorXd::Zero(new_control_points.size() - 1);
+        for (auto i : range(temp_control_points.size())) {
+            temp_control_points(i) = (1 - t) * new_control_points(i) + t * new_control_points(i + 1);
+        }
+        new_control_points = temp_control_points;
+    }
+
+    control_points_left(index) = new_control_points(0);
+    control_points_right(index) = new_control_points(0);
+
+    return { control_points_left, control_points_right };
+}
+
 std::pair<Eigen::MatrixXd, Eigen::MatrixXd>
 deCasteljau_split(const Eigen::MatrixXd& control_points, double t)
 {
@@ -58,7 +84,11 @@ deCasteljau_split(const Eigen::MatrixXd& control_points, double t)
     auto control_points_right = Eigen::MatrixXd(control_points.rows(), control_points.cols());
     auto index = 0;
     auto new_control_points = control_points;
+    auto temp_control_points = control_points;
 
     // TODO: implement this
+    while (new_control_points.size() > 1) {
+        control_points_left(index) = temp_control_points(0);
+    }
     return { control_points_left, control_points_right };
 }

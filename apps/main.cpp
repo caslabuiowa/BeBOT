@@ -1,3 +1,4 @@
+#include <algorithm.hpp>
 #include <bebot.hpp>
 #include <Eigen/Dense>
 #include <iostream>
@@ -22,4 +23,10 @@ int main() {
     };
     c.set_cpts(new_cpts);
     std::cout << c.get_cpts() << std::endl;
+
+    Eigen::VectorXd cpts_1d = c.get_cpts().row(0);
+    std::cout << cpts_1d << std::endl;
+
+    auto c_left_right = deCasteljau_split_1d(c.get_cpts().row(0), 0.5);
+    std::cout << c_left_right.first << std::endl;
 }
